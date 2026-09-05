@@ -32,9 +32,9 @@ xmlset(const char* path, XMLType type)
 
   const char* dir_path = dirname(path);
   if ((dir_path == NULL) || (dir_path[0] == '\0') || (strcmp(dir_path, path) == 0))
-  { strcpy(buffer, strfmt("%s.xml", type_name)); }
+  { strcpy(buffer, basename(path)); }
   else
-  { strcpy(buffer, strfmt("%s/%s.xml", dir_path, type_name)); }
+  { strcpy(buffer, path); }
   xml->path = strdup(buffer);
 
   strcpy(buffer, strfmt("<%s>\n`<append xpath=\"/%s\">\n", type_name, type_name));
