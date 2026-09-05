@@ -48,6 +48,9 @@ main(int argc, char* argv[])
   const char* l_file = NULL;
   for (; i<=argc; i++)
   {
+    if (argv[i] != NULL)
+    { break; }
+
     size_t length = strlen(argv[i]);
     if (length > 4)
     {
