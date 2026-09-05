@@ -29,8 +29,13 @@ c_api_closexml(lua_State* L)
   if (l_xml == NULL)
   { return luaL_error(L, "ERROR: No XML open in memory."); }
 
+  /* View XML file instead of compiling object. */
   if (compile == false)
-  { lua_pushstring(L, l_xml->xml); }
+  {
+    lua_pushstring(L, l_xml->xml);
+    xmlfree(l_xml);
+    return 1;
+  }
 
   FILE* stream = fopen(l_xml->path, "w");
   size_t i = 0;
