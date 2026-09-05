@@ -34,7 +34,7 @@ c_xml_properties(lua_State* L, const int mode, const char* name, const char* key
   }
 
   lua_pop(L, 1);
-  sbuffer = strfmt("\t\t\t<property name=\"%s\" %s/>", name, value);
+  sbuffer = strfmt("```<property name=\"%s\" %s/>", name, value);
 
   value = safe_free(value);
   value = strdup(sbuffer);
@@ -68,12 +68,12 @@ c_api_append(lua_State* L)
    * CONTENT_CURSOR_POSITION (to write properties)
    * </item>
    */
-  sbuffer = strfmt("\t\t<item name=\"%s\">\n", lua_tostring(L, 1));
+  sbuffer = strfmt("``<item name=\"%s\">\n", lua_tostring(L, 1));
   cursor = strlen(sbuffer);
-  size = cursor + strlen("\t\t</item>\n") + 1;
+  size = cursor + strlen("``</item>\n") + 1;
   content = safe_malloc(size*sizeof(char));
   strcpy(content, sbuffer);
-  strcat(content, "\t\t</item>");
+  strcat(content, "``</item>");
 
   properties = c_xml_properties(L, 2, "DescriptionKey", "description");
   content = strins(content, cursor, properties);

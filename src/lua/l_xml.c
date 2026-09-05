@@ -36,7 +36,18 @@ c_api_closexml(lua_State* L)
   size_t i = 0;
   size_t length = strlen(l_xml->xml);
   for (; i<length; i++)
-  { fputc(l_xml->xml[i], stream); }
+  {
+    char c = l_xml->xml[i];
+
+    switch (identation)
+    {
+      case -1: if ((c == '\n') || (c == '`')) { continue; }; break;
+      case 1: if (c == '`') { fputs("  ", stream); continue; }; break;
+      default: if (c == '`') { fputc('\t', stream); continue; }; break;
+    }
+
+    fputc(c, stream);
+  }
   fclose(stream);
 
   xmlfree(l_xml);

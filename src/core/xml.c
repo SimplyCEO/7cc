@@ -37,9 +37,9 @@ xmlset(const char* path, XMLType type)
   { strcpy(buffer, strfmt("%s/%s.xml", dir_path, type_name)); }
   xml->path = strdup(buffer);
 
-  strcpy(buffer, strfmt("<%s>\n\t<append xpath=\"/%s\">\n", type_name, type_name));
+  strcpy(buffer, strfmt("<%s>\n`<append xpath=\"/%s\">\n", type_name, type_name));
   xml->cursor = strlen(buffer);
-  strcat(buffer, strfmt("\t</append>\n</%s>", type_name));
+  strcat(buffer, strfmt("`</append>\n</%s>", type_name));
 
   xml->xml = strdup(buffer);
 

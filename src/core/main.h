@@ -14,6 +14,7 @@ extern "C"
 
 extern bool compile;
 extern char* output;
+extern int identation;
 
 # if defined(__cplusplus)
 }
