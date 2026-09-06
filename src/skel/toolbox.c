@@ -183,19 +183,24 @@ _strins(char* src, const size_t pos, const char* ins)
   if (ins == NULL)
   { return src; }
 
-  size_t size = strlen(src) + strlen(ins) + 7;
+  size_t src_len = strlen(src);
+  size_t ins_len = strlen(ins);
+  size_t size = src_len + ins_len + 1;
+
   char* ptr = safe_malloc(size*sizeof(char));
 
-  strncpy(ptr, src, pos);
+  if (pos > 0)
+  {
+    strncpy(ptr, src, pos);
+    ptr[pos] = '\0';
+  }
+
   strcat(ptr, ins);
 
-  if (pos == 0)
-  { strcat(ptr, src); }
-  else
-  { strcat(ptr, src + pos - 1); }
+  strcat(ptr, src + pos);
 
-  src = safe_realloc(src, (strlen(ptr)+1)*sizeof(char));
-  strcpy(src, ptr);
+  src = safe_free(src);
+  src = strdup(ptr);
 
   safe_free(ptr);
 
