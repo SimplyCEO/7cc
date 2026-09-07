@@ -13,7 +13,6 @@ end
 local function register_schematic(item)
   local formatted = item .. "Schematic"
   local properties = {
-    xml = 1,
     extends = "schematicNoQualityMaster",
     creative_mode = "Player",
     custom_icon = item,
@@ -23,7 +22,7 @@ local function register_schematic(item)
   return append(formatted, properties)
 end
 
-openxml(1)
+openxml()
 
 local length = #items
 for i=1, length do

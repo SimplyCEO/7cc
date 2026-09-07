@@ -4,6 +4,7 @@
 #include "l_xml.h"
 
 #include "xml.h"
+#include "xml_parse.h"
 
 #include "main.h"
 
@@ -15,10 +16,8 @@ c_api_openxml(lua_State* L)
   if (l_xml != NULL)
   { return luaL_error(L, "ERROR: XML is already open in memory."); }
 
-  XMLType xmltype = (XMLType)lua_tointeger(L, 1);
-  lua_pop(L, 1);
-
-  l_xml = xmlset(output, xmltype);
+  l_xml = xml_init(output);
+  l_xml = xml_version(l_xml);
 
   return 1;
 }
@@ -33,29 +32,27 @@ c_api_closexml(lua_State* L)
   if (compile == false)
   {
     lua_pushstring(L, l_xml->xml);
-    xmlfree(l_xml);
+    xml_free(l_xml);
     return 1;
+  }
+
+  l_xml = xml_parse_fix_structure(l_xml);
+  l_xml = xml_parse_identation(l_xml);
+
+  switch (identation)
+  {
+    case -1: l_xml = xml_parse_translate(l_xml, "", ""); break;
+    case 1: l_xml = xml_parse_translate(l_xml, "\n", "  "); break;
+    default: l_xml = xml_parse_translate(l_xml, "\n", "\t"); break;
   }
 
   FILE* stream = fopen(l_xml->path, "w");
   size_t i = 0;
-  size_t length = strlen(l_xml->xml);
-  for (; i<length; i++)
-  {
-    char c = l_xml->xml[i];
-
-    switch (identation)
-    {
-      case -1: if ((c == '\n') || (c == '`')) { continue; }; break;
-      case 1: if (c == '`') { fputs("  ", stream); continue; }; break;
-      default: if (c == '`') { fputc('\t', stream); continue; }; break;
-    }
-
-    fputc(c, stream);
-  }
+  for (; i<strlen(l_xml->xml); i++)
+  { fputc(l_xml->xml[i], stream); }
   fclose(stream);
 
-  xmlfree(l_xml);
+  l_xml = xml_free(l_xml);
 
   return 1;
 }

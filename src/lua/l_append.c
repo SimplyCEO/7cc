@@ -7,39 +7,45 @@
 #include "safe_alloc.h"
 #include "toolbox.h"
 #include "xml.h"
+#include "xml_field.h"
+#include "xml_key.h"
 
 int          ibuffer = 0;
 float        fbuffer = 0.0f;
 const char*  sbuffer = NULL;
 
-static char*
-c_xml_properties(lua_State* L, const int mode, const char* name, const char* key)
+static XMLObject*
+c_xml_properties(XMLObject* xml, lua_State* L, const int mode, const char* name, const char* key)
 {
-  char* value = NULL;
+  xml->xml = safe_free(xml->xml);
 
-  int type = lua_getfield(L, 2, key);
-
-  if (type == LUA_TNIL)
+  if (lua_getfield(L, 2, key) == LUA_TNIL)
   {
     lua_pop(L, 1);
-    return NULL;
+    return xml;
   }
+
+  const char* value = NULL;
 
   switch (mode)
   {
-    case 0: ibuffer = lua_tointeger(L, -1); value = strdup(strfmt("value=\"%d\"", ibuffer)); break;
-    case 1: fbuffer = lua_tonumber(L, -1); value = strdup(strfmt("value=\"%.1f\"", fbuffer)); break;
-    case 2: sbuffer = lua_tostring(L, -1); value = strdup(strfmt("value=\"%s\"", sbuffer)); break;
-    default: lua_pop(L, 1); return NULL;
+    case 0: value = strfmt("%d", lua_tointeger(L, -1)); break;
+    case 1: value = strfmt("%.1f", lua_tonumber(L, -1)); break;
+    case 2: value = strfmt("%s", lua_tostring(L, -1)); break;
+    default: lua_pop(L, 1); return xml;
   }
 
   lua_pop(L, 1);
-  sbuffer = strfmt("```<property name=\"%s\" %s/>", name, value);
 
-  value = safe_free(value);
-  value = strdup(sbuffer);
+  XMLKey** xml_key = xml_key_init(2);
+  xml_key[0] = xml_key_set(xml_key[0], "name", name);
+  xml_key[1] = xml_key_set(xml_key[1], "value", value);
 
-  return value;
+  xml = xml_add_field(xml, "property", (const XMLKey**)xml_key);
+
+  xml_key = xml_key_free(xml_key);
+
+  return xml;
 }
 
 int
@@ -47,11 +53,6 @@ c_api_append(lua_State* L)
 {
   if (l_xml == NULL)
   { return luaL_error(L, "ERROR: No XML open in memory."); }
-
-  char*        properties = NULL;
-  char*        content    = NULL;
-  size_t       cursor     = 0;
-  size_t       size       = 0;
 
   int argc = lua_gettop(L);
   if (argc < 2)
@@ -63,93 +64,72 @@ c_api_append(lua_State* L)
   if (lua_istable(L, 2) == false)
   { return luaL_error(L, "append(): Second argument is not a valid table."); }
 
-  /*
-   * <item name="resourceItem">
-   * CONTENT_CURSOR_POSITION (to write properties)
-   * </item>
-   */
-  sbuffer = strfmt("``<item name=\"%s\">\n", lua_tostring(L, 1));
-  cursor = strlen(sbuffer);
-  size = cursor + strlen("``</item>\n") + 1;
-  content = safe_malloc(size*sizeof(char));
-  strcpy(content, sbuffer);
-  strcat(content, "``</item>");
+  XMLObject* l_append = xml_init(NULL);
+  XMLKey** l_append_key = xml_key_init(1);
+  l_append_key[0] = xml_key_set(l_append_key[0], "name", lua_tostring(L, 1));
+  l_append = xml_add_field(l_append, "append", (const XMLKey**)l_append_key);
+  l_append_key = xml_key_free(l_append_key);
 
-  properties = c_xml_properties(L, 2, "DescriptionKey", "description");
-  content = strins(content, cursor, properties);
-  properties = safe_free(properties);
+  XMLObject* properties = xml_init(NULL);
 
-  properties = c_xml_properties(L, 0, "CustomIconTint", "custom_icon_tint");
-  content = strins(content, cursor, properties);
-  properties = safe_free(properties);
+  properties = c_xml_properties(properties, L, 2, "DescriptionKey", "description");
+  l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(L, 2, "CustomIcon", "custom_icon");
-  content = strins(content, cursor, properties);
-  properties = safe_free(properties);
+  properties = c_xml_properties(properties, L, 0, "CustomIconTint", "custom_icon_tint");
+  l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(L, 2, "SoundPlace", "sound_place");
-  content = strins(content, cursor, properties);
-  properties = safe_free(properties);
+  properties = c_xml_properties(properties, L, 2, "CustomIcon", "custom_icon");
+  l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(L, 2, "SoundPickup", "sound_pickup");
-  content = strins(content, cursor, properties);
-  properties = safe_free(properties);
+  properties = c_xml_properties(properties, L, 2, "SoundPlace", "sound_place");
+  l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(L, 1, "CraftingIngredientTime", "crafting_time");
-  content = strins(content, cursor, properties);
-  properties = safe_free(properties);
+  properties = c_xml_properties(properties, L, 2, "SoundPickup", "sound_pickup");
+  l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(L, 2, "Group", "group");
-  content = strins(content, cursor, properties);
-  properties = safe_free(properties);
+  properties = c_xml_properties(properties, L, 1, "CraftingIngredientTime", "crafting_time");
+  l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(L, 0, "EconomicValue", "economic");
-  content = strins(content, cursor, properties);
-  properties = safe_free(properties);
+  properties = c_xml_properties(properties, L, 2, "Group", "group");
+  l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(L, 0, "StackNumber", "stack");
-  content = strins(content, cursor, properties);
-  properties = safe_free(properties);
+  properties = c_xml_properties(properties, L, 0, "EconomicValue", "economic");
+  l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(L, 0, "Weight", "weight");
-  content = strins(content, cursor, properties);
-  properties = safe_free(properties);
+  properties = c_xml_properties(properties, L, 0, "StackNumber", "stack");
+  l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(L, 2, "Material", "material");
-  content = strins(content, cursor, properties);
-  properties = safe_free(properties);
+  properties = c_xml_properties(properties, L, 0, "Weight", "weight");
+  l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(L, 2, "DropMeshfile", "drop_mesh");
-  content = strins(content, cursor, properties);
-  properties = safe_free(properties);
+  properties = c_xml_properties(properties, L, 2, "Material", "material");
+  l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(L, 2, "Meshfile", "mesh");
-  content = strins(content, cursor, properties);
-  properties = safe_free(properties);
+  properties = c_xml_properties(properties, L, 2, "DropMeshfile", "drop_mesh");
+  l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(L, 2, "Tags", "tags");
-  content = strins(content, cursor, properties);
-  properties = safe_free(properties);
+  properties = c_xml_properties(properties, L, 2, "Meshfile", "mesh");
+  l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(L, 0, "HoldType", "hold_type");
-  content = strins(content, cursor, properties);
-  properties = safe_free(properties);
+  properties = c_xml_properties(properties, L, 2, "Tags", "tags");
+  l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(L, 2, "Extends", "extends");
-  content = strins(content, cursor, properties);
-  properties = safe_free(properties);
+  properties = c_xml_properties(properties, L, 0, "HoldType", "hold_type");
+  l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(L, 2, "CreativeMode", "creative_mode");
-  content = strins(content, cursor, properties);
-  properties = safe_free(properties);
+  properties = c_xml_properties(properties, L, 2, "Extends", "extends");
+  l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(L, 2, "Unlocks", "unlocks");
-  content = strins(content, cursor, properties);
-  properties = safe_free(properties);
+  properties = c_xml_properties(properties, L, 2, "CreativeMode", "creative_mode");
+  l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  l_xml->xml = strins(l_xml->xml, l_xml->cursor, content);
+  properties = c_xml_properties(properties, L, 2, "Unlocks", "unlocks");
+  l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  safe_free(content);
+  l_xml->xml = strins(l_xml->xml, l_xml->cursor, l_append->xml);
+
+  properties = xml_free(properties);
+  l_append = xml_free(l_append);
 
   return 1;
 }
