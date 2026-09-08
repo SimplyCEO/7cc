@@ -41,7 +41,7 @@ c_xml_properties(XMLObject* xml, lua_State* L, const int mode, const char* name,
   xml_key[0] = xml_key_set(xml_key[0], "name", name);
   xml_key[1] = xml_key_set(xml_key[1], "value", value);
 
-  xml = xml_add_field(xml, "property", (const XMLKey**)xml_key);
+  xml = xml_field_add(xml, "property", (const XMLKey**)xml_key);
 
   xml_key = xml_key_free(xml_key);
 
@@ -67,7 +67,7 @@ c_api_append(lua_State* L)
   XMLObject* l_append = xml_init(NULL);
   XMLKey** l_append_key = xml_key_init(1);
   l_append_key[0] = xml_key_set(l_append_key[0], "name", lua_tostring(L, 1));
-  l_append = xml_add_field(l_append, "append", (const XMLKey**)l_append_key);
+  l_append = xml_field_add(l_append, "append", (const XMLKey**)l_append_key);
   l_append_key = xml_key_free(l_append_key);
 
   XMLObject* properties = xml_init(NULL);

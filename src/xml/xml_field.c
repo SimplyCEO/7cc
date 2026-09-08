@@ -6,7 +6,7 @@
 #include "toolbox.h"
 
 XMLObject*
-xml_add_field(XMLObject* xml, const char* name, const XMLKey** key)
+xml_field_add(XMLObject* xml, const char* name, const XMLKey** key)
 {
   if (xml == NULL)
   { return NULL; }
