@@ -23,6 +23,20 @@ l_api_functions(void)
   lua_setglobal(L, "closexml");
 }
 
+const char*
+l_getvalue(lua_State* L, const int index)
+{
+  const char* value = NULL;
+
+  if      (lua_isstring(L,  index) == true) { value = strfmt("%s",   lua_tostring(L,  index)); }
+  else if (lua_isinteger(L, index) == true) { value = strfmt("%d",   lua_tointeger(L, index)); }
+  else if (lua_isnumber(L,  index) == true) { value = strfmt("%f.1", lua_tonumber(L,  index)); }
+  else if (lua_isboolean(L, index) == true) { value = (lua_toboolean(L, index) == 0) ? "false" : "true"; }
+  else { value = "nil"; }
+
+  return value;
+}
+
 int
 l_init(void)
 {

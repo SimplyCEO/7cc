@@ -12,9 +12,10 @@ extern "C"
 #include <lauxlib.h>
 #include <lualib.h>
 
-int l_init(void);
-int l_run(const char* filepath);
-int l_free(void);
+const char* l_getvalue(lua_State* L, const int index);
+int         l_init(void);
+int         l_run(const char* filepath);
+int         l_free(void);
 
 # if defined(__cplusplus)
 }
