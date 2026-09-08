@@ -12,9 +12,6 @@
 int
 l_api_field_add(lua_State* L)
 {
-  if (l_xml == NULL)
-  { return luaL_error(L, "ERROR: No XML open in memory."); }
-
   int argc = lua_gettop(L);
   if (argc < 2)
   { return luaL_error(L, "usage: field_add(\"field_name\", keys)"); }
