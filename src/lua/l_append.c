@@ -15,7 +15,7 @@ float        fbuffer = 0.0f;
 const char*  sbuffer = NULL;
 
 static XMLObject*
-c_xml_properties(XMLObject* xml, lua_State* L, const int mode, const char* name, const char* key)
+_properties_parse(XMLObject* xml, lua_State* L, const int mode, const char* name, const char* key)
 {
   xml->xml = safe_free(xml->xml);
 
@@ -49,7 +49,7 @@ c_xml_properties(XMLObject* xml, lua_State* L, const int mode, const char* name,
 }
 
 int
-c_api_append(lua_State* L)
+l_api_append(lua_State* L)
 {
   if (l_xml == NULL)
   { return luaL_error(L, "ERROR: No XML open in memory."); }
@@ -72,58 +72,58 @@ c_api_append(lua_State* L)
 
   XMLObject* properties = xml_init(NULL);
 
-  properties = c_xml_properties(properties, L, 2, "DescriptionKey", "description");
+  properties = _properties_parse(properties, L, 2, "DescriptionKey", "description");
   l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(properties, L, 0, "CustomIconTint", "custom_icon_tint");
+  properties = _properties_parse(properties, L, 0, "CustomIconTint", "custom_icon_tint");
   l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(properties, L, 2, "CustomIcon", "custom_icon");
+  properties = _properties_parse(properties, L, 2, "CustomIcon", "custom_icon");
   l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(properties, L, 2, "SoundPlace", "sound_place");
+  properties = _properties_parse(properties, L, 2, "SoundPlace", "sound_place");
   l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(properties, L, 2, "SoundPickup", "sound_pickup");
+  properties = _properties_parse(properties, L, 2, "SoundPickup", "sound_pickup");
   l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(properties, L, 1, "CraftingIngredientTime", "crafting_time");
+  properties = _properties_parse(properties, L, 1, "CraftingIngredientTime", "crafting_time");
   l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(properties, L, 2, "Group", "group");
+  properties = _properties_parse(properties, L, 2, "Group", "group");
   l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(properties, L, 0, "EconomicValue", "economic");
+  properties = _properties_parse(properties, L, 0, "EconomicValue", "economic");
   l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(properties, L, 0, "StackNumber", "stack");
+  properties = _properties_parse(properties, L, 0, "StackNumber", "stack");
   l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(properties, L, 0, "Weight", "weight");
+  properties = _properties_parse(properties, L, 0, "Weight", "weight");
   l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(properties, L, 2, "Material", "material");
+  properties = _properties_parse(properties, L, 2, "Material", "material");
   l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(properties, L, 2, "DropMeshfile", "drop_mesh");
+  properties = _properties_parse(properties, L, 2, "DropMeshfile", "drop_mesh");
   l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(properties, L, 2, "Meshfile", "mesh");
+  properties = _properties_parse(properties, L, 2, "Meshfile", "mesh");
   l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(properties, L, 2, "Tags", "tags");
+  properties = _properties_parse(properties, L, 2, "Tags", "tags");
   l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(properties, L, 0, "HoldType", "hold_type");
+  properties = _properties_parse(properties, L, 0, "HoldType", "hold_type");
   l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(properties, L, 2, "Extends", "extends");
+  properties = _properties_parse(properties, L, 2, "Extends", "extends");
   l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(properties, L, 2, "CreativeMode", "creative_mode");
+  properties = _properties_parse(properties, L, 2, "CreativeMode", "creative_mode");
   l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
-  properties = c_xml_properties(properties, L, 2, "Unlocks", "unlocks");
+  properties = _properties_parse(properties, L, 2, "Unlocks", "unlocks");
   l_append->xml = strins(l_append->xml, l_append->cursor, properties->xml);
 
   l_xml->xml = strins(l_xml->xml, l_xml->cursor, l_append->xml);

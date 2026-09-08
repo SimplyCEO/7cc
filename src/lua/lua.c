@@ -13,13 +13,13 @@ lua_State* L = NULL;
 static void
 l_api_functions(void)
 {
-  lua_pushcfunction(L, c_api_append);
+  lua_pushcfunction(L, l_api_append);
   lua_setglobal(L, "append");
 
-  lua_pushcfunction(L, c_api_openxml);
+  lua_pushcfunction(L, l_api_openxml);
   lua_setglobal(L, "openxml");
 
-  lua_pushcfunction(L, c_api_closexml);
+  lua_pushcfunction(L, l_api_closexml);
   lua_setglobal(L, "closexml");
 }
 

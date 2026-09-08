@@ -11,7 +11,7 @@
 XMLObject* l_xml = NULL;
 
 int
-c_api_openxml(lua_State* L)
+l_api_openxml(lua_State* L)
 {
   if (l_xml != NULL)
   { return luaL_error(L, "ERROR: XML is already open in memory."); }
@@ -23,7 +23,7 @@ c_api_openxml(lua_State* L)
 }
 
 int
-c_api_closexml(lua_State* L)
+l_api_closexml(lua_State* L)
 {
   if (l_xml == NULL)
   { return luaL_error(L, "ERROR: No XML open in memory."); }

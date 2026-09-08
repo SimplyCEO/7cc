@@ -8,7 +8,7 @@ extern "C"
 
 # include "lua.h"
 
-int c_api_append(lua_State* L);
+int l_api_append(lua_State* L);
 
 # if defined(__cplusplus)
 }
