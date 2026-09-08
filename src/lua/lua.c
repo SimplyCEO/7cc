@@ -3,6 +3,7 @@
 
 #include "lua.h"
 #include "l_append.h"
+#include "l_field.h"
 #include "l_xml.h"
 
 #include "safe_alloc.h"
@@ -13,6 +14,9 @@ lua_State* L = NULL;
 static void
 l_api_functions(void)
 {
+  lua_pushcfunction(L, l_api_field_add);
+  lua_setglobal(L, "field_add");
+
   lua_pushcfunction(L, l_api_append);
   lua_setglobal(L, "append");
 
