@@ -58,6 +58,7 @@ l_api_closexml(lua_State* L)
   if (compile == false)
   {
     lua_pushstring(L, l_xml->xml);
+    lua_setglobal(L, "xml");
     xml_free(l_xml);
     return 1;
   }
