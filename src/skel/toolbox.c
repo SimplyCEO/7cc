@@ -138,10 +138,8 @@ _strsub(char* src, const size_t pos, const char c)
   /* Return ptr to initial position. */
   ptr = ptr_start;
 
-  src = safe_realloc(src, (strlen(ptr)+1)*sizeof(char));
-  strcpy(src, ptr);
-
-  safe_free(ptr);
+  src = safe_free(src);
+  src = ptr;
 
   return src;
 }
@@ -202,9 +200,7 @@ _strins(char* src, const size_t pos, const char* ins)
   strcat(ptr, src + pos);
 
   src = safe_free(src);
-  src = strdup(ptr);
-
-  safe_free(ptr);
+  src = ptr;
 
   return src;
 }
@@ -217,11 +213,10 @@ _strcut(char* src, const size_t n1, const size_t n2)
   char* ptr = safe_malloc(size*sizeof(char));
 
   strncpy(ptr, src + n1, size);
+  ptr[size] = '\0';
 
-  src = safe_realloc(src, size*sizeof(char));
-  strcpy(src, ptr);
-
-  safe_free(ptr);
+  src = safe_free(src);
+  src = ptr;
 
   return src;
 }
@@ -235,10 +230,9 @@ _strdel(char* src, const size_t n1, const size_t n2)
 
   strncpy(ptr, src, n1);
   strncat(ptr, src + n2, strlen(src+n2) + 1);
-  src = safe_realloc(src, (strlen(ptr)+1)*sizeof(char));
-  strcpy(src, ptr);
 
-  safe_free(ptr);
+  src = safe_free(src);
+  src = ptr;
 
   return src;
 }
