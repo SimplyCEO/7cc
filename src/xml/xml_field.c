@@ -18,11 +18,9 @@ xml_field_add(XMLObject* xml, const char* name, const XMLKey** key)
     if (*key != NULL)
     {
       int i = 0;
-      int size = 0;
 
       while (key[i] != NULL)
       { ++i; }
-      size = i;
 
       /* Insert keys backwards. */
       for (i=(i-1); i>=0; --i)

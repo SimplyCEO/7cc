@@ -19,7 +19,6 @@ xml_init(const char* path)
 
   if (path != NULL)
   {
-    size_t      path_len = strlen(path);
     char*       buffer   = strdup(path);
     const char* dir_path = dirname(path);
 
