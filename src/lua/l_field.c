@@ -37,6 +37,8 @@ l_api_field_add(lua_State* L)
     lua_pop(L, 1);
   }
 
+  xml_key = xml_key_reorder(xml_key, XMLKEY_DEFAULT_ORDER);
+
   xml_field = xml_field_add(xml_field, field, (const XMLKey**)xml_key);
 
   lua_pushstring(L, xml_field->xml);
