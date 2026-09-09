@@ -14,6 +14,9 @@ lua_State* L = NULL;
 static void
 l_api_functions(void)
 {
+  lua_pushcfunction(L, l_api_field_init);
+  lua_setglobal(L, "field_init");
+
   lua_pushcfunction(L, l_api_field_add);
   lua_setglobal(L, "field_add");
 

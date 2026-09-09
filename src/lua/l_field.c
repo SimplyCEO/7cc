@@ -7,10 +7,11 @@
 #include "xml_field.h"
 #include "xml_key.h"
 
+#include "toolbox.h"
 #include "types.h"
 
 int
-l_api_field_add(lua_State* L)
+l_api_field_init(lua_State* L)
 {
   int argc = lua_gettop(L);
   if (argc < 2)
@@ -52,6 +53,24 @@ l_api_field_add(lua_State* L)
 
   xml_key = xml_key_free(xml_key);
   xml_field = xml_free(xml_field);
+
+  return 1;
+}
+
+int
+l_api_field_add(lua_State* L)
+{
+  if (l_xml == NULL)
+  { return luaL_error(L, "ERROR: No XML open in memory."); }
+
+  int argc = lua_gettop(L);
+  if (argc < 1)
+  { return luaL_error(L, "usage: field_add(keys)"); }
+
+  if (lua_isstring(L, 1) == false)
+  { return luaL_error(L, "field_add(): Second argument is not a valid XML field."); }
+
+  l_xml->xml = strins(l_xml->xml, l_xml->cursor, lua_tostring(L, 1));
 
   return 1;
 }
