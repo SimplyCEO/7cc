@@ -149,6 +149,7 @@ _strsub(char* src, const size_t pos, const char c)
 char*
 _strlwr(char* src)
 {
+  char* output = src;
   char* str = strdup(src);
   char* ptr = str;
 
@@ -158,12 +159,13 @@ _strlwr(char* src)
 
   safe_free(ptr);
 
-  return src;
+  return output;
 }
 
 char*
 _strupr(char* src)
 {
+  char* output = src;
   char* str = strdup(src);
   char* ptr = str;
 
@@ -173,7 +175,7 @@ _strupr(char* src)
 
   safe_free(ptr);
 
-  return src;
+  return output;
 }
 
 /* Insert string after given position. */
