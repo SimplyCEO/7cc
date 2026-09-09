@@ -32,6 +32,13 @@ l_api_field_add(lua_State* L)
     const char* name = lua_tostring(L, -2);
     const char* value = l_getvalue(L, -1);
 
+    /* Ignore NULL values even if key exists. */
+    if (value == NULL)
+    {
+      lua_pop(L, 1);
+      continue;
+    }
+
     xml_key = xml_key_add(xml_key, name, value);
 
     lua_pop(L, 1);
