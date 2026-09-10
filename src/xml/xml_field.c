@@ -13,7 +13,7 @@ xml_field_add(XMLObject* xml, const char* name, const XMLKey** key)
 
   char* keys = safe_malloc(sizeof(char));
 
-  if (key != NULL)
+  if ((key != NULL) && ((*key)->name != NULL))
   {
     if (*key != NULL)
     {

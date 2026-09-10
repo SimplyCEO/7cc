@@ -114,6 +114,9 @@ xml_key_add(XMLKey** xml_key, const char* name, const char* value)
 XMLKey**
 xml_key_reorder(XMLKey** xml_key, const char* order)
 {
+  if ((xml_key == NULL) || ((*xml_key)->name == NULL))
+  { return xml_key; }
+
   size_t      i = 0;
   size_t      n = 0;
   size_t      size = 0;
