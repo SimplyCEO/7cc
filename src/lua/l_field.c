@@ -10,25 +10,14 @@
 #include "toolbox.h"
 #include "types.h"
 
-int
-l_api_field_init(lua_State* L)
+static XMLObject*
+_generate_field(lua_State* L, const size_t index, const char* field)
 {
-  int argc = lua_gettop(L);
-  if (argc < 2)
-  { return luaL_error(L, "usage: field_add(\"field_name\", keys)"); }
-
-  if (lua_isstring(L, 1) == false)
-  { return luaL_error(L, "field_add(): First argument is not a valid string."); }
-
-  if (lua_istable(L, 2) == false)
-  { return luaL_error(L, "field_add(): Second argument is not a valid table."); }
-
   XMLObject* xml_field = xml_init(NULL);
-  const char* field = lua_tostring(L, 1);
   XMLKey** xml_key = xml_key_init(1);
 
   lua_pushnil(L);
-  while (lua_next(L, 2))
+  while (lua_next(L, index))
   {
     const char* name = lua_tostring(L, -2);
     const char* value = l_getvalue(L, -1);
@@ -46,12 +35,31 @@ l_api_field_init(lua_State* L)
   }
 
   xml_key = xml_key_reorder(xml_key, XMLKEY_DEFAULT_ORDER);
-
   xml_field = xml_field_add(xml_field, field, (const XMLKey**)xml_key);
+
+  xml_key = xml_key_free(xml_key);
+
+  return xml_field;
+}
+
+int
+l_api_field_init(lua_State* L)
+{
+  int argc = lua_gettop(L);
+  if (argc < 2)
+  { return luaL_error(L, "usage: field_add(\"field_name\", keys)"); }
+
+  if (lua_isstring(L, 1) == false)
+  { return luaL_error(L, "field_add(): First argument is not a valid string."); }
+
+  if (lua_istable(L, 2) == false)
+  { return luaL_error(L, "field_add(): Second argument is not a valid table."); }
+
+  const char* field = lua_tostring(L, 1);
+  XMLObject* xml_field = _generate_field(L, 2, field);
 
   lua_pushstring(L, xml_field->xml);
 
-  xml_key = xml_key_free(xml_key);
   xml_field = xml_free(xml_field);
 
   return 1;
