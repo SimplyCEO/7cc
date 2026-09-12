@@ -71,6 +71,9 @@ _generate_field(lua_State* L, const int index, const char* field)
   XMLObject* xml_field = xml_init(NULL);
   XMLKey** xml_key = _generate_key(L, index);
 
+  if (buffer == NULL)
+  { buffer = field; }
+
   /* Generate field with keys. */
   xml_key = xml_key_reorder(xml_key, XMLKEY_DEFAULT_ORDER);
   xml_field = xml_field_add(xml_field, field, (const XMLKey**)xml_key);
