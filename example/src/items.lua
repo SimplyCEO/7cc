@@ -1,35 +1,49 @@
 local items = {
-  "armorNerdHelmetSchematic",
-  "armorNerdOutfitSchematic",
-  "armorNerdGlovesSchematic",
-  "armorNerdBootsSchematic",
-  "meleeWpnBatonT2StunBatonSchematic",
+  "armorNerdHelmet",
+  "armorNerdOutfit",
+  "armorNerdGloves",
+  "armorNerdBoots",
+  "meleeWpnBatonT2StunBaton",
 };
 
-local function register_item(item, properties)
-  return append(item, properties)
-end
-
 local function register_schematic(item)
-  local formatted = item .. "Schematic"
   local properties = {
-    extends = "schematicNoQualityMaster",
-    creative_mode = "Player",
-    custom_icon = item,
-    unlocks = item
+    name = item .. "Schematic",
+    property = {
+      { name = "Extends", value = "schematicNoQualityMaster" },
+      { name = "CreativeMode", value = "Player" },
+      { name = "CustomIcon", value = item },
+      { name = "Unlocks", value = item }
+    },
+    effect_group  = {
+      tiered = false,
+      triggered_effect = {
+        { trigger = "onSelfPrimaryActionEnd", action = "ModifyCVar", cvar = "armorAthleticHelmet", operation = "set", value = "1" },
+        { trigger = "onSelfPrimaryActionEnd", action = "GiveExp", exp = "50" }
+      }
+    }
   }
 
-  return append(formatted, properties)
+  return properties
 end
 
-openxml()
+local str_field = ""
 
 local length = #items
 for i=1, length do
   local index = length - i + 1
-  register_schematic(items[index])
+  local schematic = register_schematic(items[index])
+  local field = field_init("item", schematic)
+  str_field = str_field .. field
 end
 
-local output = closexml()
--- print(output)
+openxml()
+
+append("items", str_field)
+
+closexml()
+
+if (xml ~= nil) then
+  print(xml)
+end
 
