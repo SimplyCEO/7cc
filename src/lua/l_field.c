@@ -15,12 +15,22 @@
 const char* buffer = NULL;
 XMLObject* xml_buffer = NULL;
 
+static char*
+_strbuff(lua_State* L, const int index)
+{
+  static char output[32] = {0};
+  memset(output, '\0', 32);
+
+  strncpy(output, l_getvalue(L, index), 32);
+
+  return output;
+}
+
 static XMLKey**
 _generate_key(lua_State* L, const int index)
 {
   char* name = NULL;
   char* value = NULL;
-  const char* token = NULL;
   XMLKey** xml_key = xml_key_init(1);
 
   if (lua_istable(L, index) == true)
@@ -30,19 +40,17 @@ _generate_key(lua_State* L, const int index)
     {
       int sub_index = lua_gettop(L);
 
-      if (lua_type(L, sub_index-1) == LUA_TNUMBER)
-      { lua_pop(L, 2); break; }
+      if ((lua_type(L, sub_index-1) == LUA_TNUMBER) || (lua_istable(L, sub_index) == true) )
+      {
+        lua_pop(L, 2);
+        break;
+      }
 
-      token = l_getvalue(L, sub_index-1);
-      if (token != NULL)
-      { name = strdup(token); }
-
-      token = l_getvalue(L, sub_index);
-      if (token != NULL)
-      { value = strdup(token); }
+      name = strdup(_strbuff(L, sub_index-1));
+      value = strdup(_strbuff(L, sub_index));
 
       /* Ignore NULL values even if key exists. */
-      if ((value == NULL) || (lua_istable(L, sub_index) == true)  )
+      if (strncmp(value, "nil", 3) == 0)
       {
         lua_pop(L, 1);
         continue;
@@ -67,7 +75,6 @@ _generate_field(lua_State* L, const int index, const char* field)
   int table_length = 0;
   char* name = NULL;
   char* value = NULL;
-  const char* token = NULL;
   XMLObject* xml_field = xml_init(NULL);
   XMLKey** xml_key = _generate_key(L, index);
 
@@ -118,16 +125,11 @@ _generate_field(lua_State* L, const int index, const char* field)
       {
         int sub_index = lua_gettop(L);
 
-        token = l_getvalue(L, sub_index-1);
-        if (token != NULL)
-        { name = strdup(token); }
-
-        token = l_getvalue(L, sub_index);
-        if (token != NULL)
-        { value = strdup(token); }
+        name = strdup(_strbuff(L, sub_index-1));
+        value = strdup(_strbuff(L, sub_index));
 
         /* Ignore NULL values even if key exists. */
-        if (value == NULL)
+        if (strncmp(value, "nil", 3) == 0)
         {
           lua_pop(L, 1);
           continue;
