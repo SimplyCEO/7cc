@@ -30,10 +30,8 @@ _generate_key(lua_State* L, const int index)
     {
       int sub_index = lua_gettop(L);
 
-      /* TODO: FIX SUBFIELD ARRAY.
       if (lua_type(L, sub_index-1) == LUA_TNUMBER)
-      { lua_pop(L, 1); break; }
-      */
+      { lua_pop(L, 2); break; }
 
       token = l_getvalue(L, sub_index-1);
       if (token != NULL)
@@ -65,6 +63,8 @@ _generate_key(lua_State* L, const int index)
 static XMLObject*
 _generate_field(lua_State* L, const int index, const char* field)
 {
+  int i = 0;
+  int table_length = 0;
   char* name = NULL;
   char* value = NULL;
   const char* token = NULL;
@@ -79,72 +79,71 @@ _generate_field(lua_State* L, const int index, const char* field)
   /* Generate sub field if found in table. */
   if (lua_istable(L, index) == true)
   {
-    lua_pushnil(L);
-    while (lua_next(L, index) != 0)
+    bool is_table_array = false;
+
+    lua_len(L, index);
+    table_length = lua_tointeger(L, -1);
+    lua_pop(L, 1);
+
+    /* Iterate table array. */
+    for (i=1; i<=table_length; ++i)
     {
+      lua_rawgeti(L, index, i);
+
       int sub_index = lua_gettop(L);
 
-      /* TODO: FIX SUBFIELD ARRAY.
-      if (lua_type(L, sub_index-1) == LUA_TNUMBER)
-      {
-        if (lua_istable(L, sub_index) == true)
-        {
-          lua_pushnil(L);
-          while (lua_next(L, sub_index) != 0)
-          {
-            int nested_index = lua_gettop(L);
+      XMLObject* xml_sub_field = xml_init(NULL);
+      XMLKey** xml_sub_keys = _generate_key(L, sub_index);
 
-            token = l_getvalue(L, nested_index);
-            if (token != NULL)
-            { value = strdup(token); }
+      xml_sub_keys = xml_key_reorder(xml_sub_keys, XMLKEY_DEFAULT_ORDER);
+      xml_sub_field = xml_field_add(xml_sub_field, buffer, (const XMLKey**)xml_sub_keys);
+      xml_sub_keys = xml_key_free(xml_sub_keys);
 
-            XMLObject* xml_sub_field = xml_init(NULL);
-            XMLKey** xml_sub_keys = _generate_key(L, lua_gettop(L));
-
-            xml_sub_keys = xml_key_reorder(xml_sub_keys, XMLKEY_DEFAULT_ORDER);
-            xml_sub_field = xml_field_add(xml_sub_field, buffer, (const XMLKey**)xml_sub_keys);
-            xml_sub_keys = xml_key_free(xml_sub_keys);
-
-            xml_field->xml = strins(xml_field->xml, xml_field->cursor, xml_sub_field->xml);
-            xml_sub_field = xml_free(xml_sub_field);
-
-            lua_pop(L, 1);
-          }
-        }
-        printf("%s\n", xml_field->xml);
-        lua_pop(L, 1);
-        continue;
-      }
-      */
-
-      token = l_getvalue(L, sub_index-1);
-      if (token != NULL)
-      { name = strdup(token); }
-
-      token = l_getvalue(L, sub_index);
-      if (token != NULL)
-      { value = strdup(token); }
-
-      /* Ignore NULL values even if key exists. */
-      if (value == NULL)
-      {
-        lua_pop(L, 1);
-        continue;
-      }
-
-      if (lua_istable(L, sub_index) == true)
-      {
-        buffer = name;
-        XMLObject* xml_sub_field = _generate_field(L, sub_index, name);
-        xml_field->xml = strins(xml_field->xml, xml_field->cursor, xml_sub_field->xml);
-        xml_sub_field = xml_free(xml_sub_field);
-        buffer = NULL;
-
-        lua_pop(L, 1);
-        continue;
-      }
+      xml_field->xml = strins(xml_field->xml, xml_field->cursor, xml_sub_field->xml);
+      xml_sub_field = xml_free(xml_sub_field);
 
       lua_pop(L, 1);
+
+      is_table_array = true;
+    }
+
+    /* lua_next() can not receive numeric keys. */
+    if (is_table_array == false)
+    {
+      lua_pushnil(L);
+      while (lua_next(L, index) != 0)
+      {
+        int sub_index = lua_gettop(L);
+
+        token = l_getvalue(L, sub_index-1);
+        if (token != NULL)
+        { name = strdup(token); }
+
+        token = l_getvalue(L, sub_index);
+        if (token != NULL)
+        { value = strdup(token); }
+
+        /* Ignore NULL values even if key exists. */
+        if (value == NULL)
+        {
+          lua_pop(L, 1);
+          continue;
+        }
+
+        if (lua_istable(L, sub_index) == true)
+        {
+          buffer = name;
+          XMLObject* xml_sub_field = _generate_field(L, sub_index, name);
+          xml_field->xml = strins(xml_field->xml, xml_field->cursor, xml_sub_field->xml);
+          xml_sub_field = xml_free(xml_sub_field);
+          buffer = NULL;
+
+          lua_pop(L, 1);
+          continue;
+        }
+
+        lua_pop(L, 1);
+      }
     }
   }
 
