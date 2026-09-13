@@ -1,5 +1,5 @@
-7 Days to Die Code Compiler
-===========================
+<img src="./.media/7cc_icon.png" width="32" title="7 Days to Die Code Compiler"> 7 Days to Die Code Compiler
+============================================================================================================
 
 7cc is inspired by most C compilers.
 But instead of compiling C code to machine language, it translates Lua calls to the given XML files.
@@ -12,7 +12,10 @@ Building
 --------
 
 7cc depends on Lua only and it is required to compile:
+
 ```sh
+git clone https://codeberg.org/SimplyCEO/7cc.git
+cd 7cc/
 make BUILD_TYPE=Release
 ```
 
@@ -22,12 +25,27 @@ Makefile:
 - LDFLAGS: Linker flags;
 - BUILD_TYPE: `Debug` or `Release`;
 - BUILD_STATIC: Force statically linking objects;
-- INSTALL_PREFIX: Not fully implemented;
+- INSTALL_PREFIX: Installation prefix for built binary;
+
+Installation
+------------
+
+The compiled binary will be located inside `bin` directory.
+It can also be installed using the `INSTALL_PREFIX=/usr/local` option.
+
+```sh
+su -c 'make INSTALL_PREFIX=/usr/local install'
+```
+
+For portable installation:
+
+```sh
+make install
+```
 
 TODO
 ----
 
-- Receive arguments and apply flags;
 - Develop the entire game `Data` XML API;
 - Provide 7CC API documentation;
 - Crossplatform code linking;
