@@ -40,10 +40,15 @@ _generate_key(lua_State* L, const int index)
     {
       int sub_index = lua_gettop(L);
 
-      if ((lua_type(L, sub_index-1) == LUA_TNUMBER) || (lua_istable(L, sub_index) == true) )
+      if ((lua_type(L, sub_index-1) == LUA_TNUMBER) || (lua_istable(L, sub_index) == true))
       {
-        lua_pop(L, 2);
-        break;
+        if (lua_type(L, sub_index-1) == LUA_TNUMBER)
+        {
+          lua_pop(L, 2);
+          break;
+        }
+        lua_pop(L, 1);
+        continue;
       }
 
       name = strdup(_strbuff(L, sub_index-1));
