@@ -18,7 +18,7 @@ local function register_schematic(item)
     effect_group  = {
       tiered = false,
       triggered_effect = {
-        { trigger = "onSelfPrimaryActionEnd", action = "ModifyCVar", cvar = "armorAthleticHelmet", operation = "set", value = "1" },
+        { trigger = "onSelfPrimaryActionEnd", action = "ModifyCVar", cvar = item, operation = "set", value = "1" },
         { trigger = "onSelfPrimaryActionEnd", action = "GiveExp", exp = "50" }
       }
     }
@@ -38,9 +38,7 @@ for i=1, length do
 end
 
 cc.openxml()
-
 cc.append("items", str_field)
-
 cc.closexml()
 
 if (xml ~= nil) then
