@@ -18,6 +18,7 @@ int32_t
 _vsprintf(char* src, const char* format, va_list ap)
 {
   int count = 0;
+  char* float_fmt = "%f";
 
   while (*format != '\0')
   {
@@ -25,61 +26,65 @@ _vsprintf(char* src, const char* format, va_list ap)
     {
       case '%':
       {
-        format++;
+        ++format;
         switch (*format)
         {
-          case 'c':
-          {
-            if (src != NULL)
-            { *src++ = (char)va_arg(ap, int); }
-            count++;
-          } break;
+          case 'c': if (src != NULL) { *src++ = (char)va_arg(ap, int); } ++count; break;
           case 's':
           {
             char* s = va_arg(ap, char*);
-            int s_len = 0; for (; *s != '\0'; s++)
-            {
-              if (src != NULL)
-              { *src++ = *s; }
-              s_len++;
-            }
+            int s_len = 0;
+            for (; *s!='\0'; ++s)
+            { if (src != NULL) { *src++ = *s; } ++s_len; }
             count += s_len;
           } break;
           case 'd':
           {
             int num = va_arg(ap, int);
             char buffer[20] = {0};
+            memset(buffer, '\0', 20);
             int len = sprintf(buffer, "%d", num);
-            int i = 0; for (; i < len; i++)
+            int i = 0;
+            for (; i<len; ++i)
+            { if (src != NULL) { *src++ = buffer[i]; } ++count; }
+          } break;
+          case '.':
+          {
+            if ((format[1] >= '0') && (format[1] <= '9'))
             {
-              if (src != NULL)
-              { *src++ = buffer[i]; }
-              count++;
+              float_fmt = safe_malloc(5*sizeof(char));
+              sprintf(float_fmt, "%%.%cf", format[1]);
+            }
+            else
+            {
+              break;
+            }
+          }
+          case 'f':
+          {
+            float num = (float)va_arg(ap, double);
+            char buffer[20] = {0};
+            memset(buffer, '\0', 20);
+            int len = sprintf(buffer, float_fmt, num);
+            int i = 0;
+            for (; i<len; ++i)
+            { if (src != NULL) { *src++ = buffer[i]; } ++count; }
+
+            if (strncmp(float_fmt, "%f", 2) != 0)
+            {
+              float_fmt = safe_free(float_fmt);
+              float_fmt = "%f";
             }
           } break;
-          case '%':
-          {
-            if (src != NULL)
-            { *src++ = '%'; }
-            count++;
-          } break;
-          default:
-          {
-            if (src != NULL)
-            { *src++ = *format; }
-            count++;
-          } break;
+          case '%': if (src != NULL) { *src++ = '%'; } ++count; break;
+          default: if (src != NULL) { *src++ = *format; } ++count; break;
         }
       } break;
-      default:
-      {
-        if (src != NULL)
-        { *src++ = *format; }
-        count++;
-      } break;
+      default: if (src != NULL) { *src++ = *format; } ++count; break;
     }
-    format++;
+    ++format;
   }
+
   if (src != NULL)
   { *src = '\0'; }
 
