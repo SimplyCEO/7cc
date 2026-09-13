@@ -13,9 +13,9 @@ extern "C"
 #   define fcaseopen fopen
 #   define caserename rename
 # else
-const char* casepath(char const *path);
-FILE* fcaseopen(char const *path, char const *mode);
-void casechdir(char const *path);
+char* casepath(const char* path);
+FILE* fcaseopen(const char* path, const char* mode);
+void casechdir(const char* path);
 # endif
 
 # if defined(__cplusplus)

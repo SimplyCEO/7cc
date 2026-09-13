@@ -117,10 +117,10 @@ xml_key_reorder(XMLKey** xml_key, const char* order)
   if ((xml_key == NULL) || ((*xml_key)->name == NULL))
   { return xml_key; }
 
-  size_t      i = 0;
-  size_t      n = 0;
-  size_t      size = 0;
-  size_t      n_size = 0;
+  int         i = 0;
+  int         n = 0;
+  int         size = 0;
+  int         n_size = 0;
   int*        indexes = NULL;
   XMLKey**    new_xml_key = NULL;
   const char* order_ptr = order;

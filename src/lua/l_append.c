@@ -32,7 +32,7 @@ l_api_append(lua_State* L)
   XMLKey** append_key = xml_key_init(1);
 
   append_key = xml_key_add(append_key, "xpath", strfmt("/%s", section));
-  append = xml_field_add(append, "append", (const XMLKey**)append_key);
+  append = xml_field_add(append, "append", append_key);
 
   append->xml = strins(append->xml, append->cursor, field);
 

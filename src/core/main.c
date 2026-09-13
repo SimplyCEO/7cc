@@ -44,9 +44,9 @@ main(int argc, char* argv[])
   if (argc == 1)
   { help(); return 1; }
 
-  size_t i = 0;
+  int i = 0;
   const char* l_file = NULL;
-  for (; i<=argc; i++)
+  for (; i<=argc; ++i)
   {
     if (argv[i] == NULL)
     { break; }
@@ -70,7 +70,7 @@ main(int argc, char* argv[])
 
   int opt = 0;
   int opt_index = 0;
-  while ((opt = getopt_long(argc, argv, "co:i:hv", opts, &opt_index)) != -1)
+  while ((opt=getopt_long(argc, argv, "co:i:vh", opts, &opt_index)) != -1)
   {
     switch (opt)
     {
@@ -82,9 +82,9 @@ main(int argc, char* argv[])
     }
   }
 
-  l_init();
-  l_run(l_file);
-  l_free();
+  lua_State* L = l_init();
+  l_run(L, l_file);
+  l_free(L);
 
   safe_free(output);
 

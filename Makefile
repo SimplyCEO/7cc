@@ -34,6 +34,8 @@ else ifeq ($(BUILD_TYPE), Debug)
 	CFLAGS += -g3 -ggdb -Wall
 endif
 
+CFLAGS += -Wall -Wextra -Werror
+
 ifndef __STDC_VERSION__
 	__STDC_VERSION__ := 199002L
 endif

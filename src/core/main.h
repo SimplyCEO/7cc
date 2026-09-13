@@ -8,7 +8,8 @@ extern "C"
 
 # define PROJECT_MAJOR 0
 # define PROJECT_MINOR 0
-# define PROJECT_PATCH 10
+# define PROJECT_PATCH 11
+# define PROJECT_7CC_VERSION ((PROJECT_MAJOR*100000)+(PROJECT_MINOR*1000)+(PROJECT_PATCH))
 
 # include "types.h"
 

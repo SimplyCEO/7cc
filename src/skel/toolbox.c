@@ -14,6 +14,12 @@
 char* strfmt_ptr = NULL;
 
 #if (__STDC_VERSION__ < 199901L) && !defined(__cplusplus)
+static void
+_fillbuf(char* buffer, const size_t size)
+{
+  memset(buffer, '\0', size);
+}
+
 int32_t
 _vsprintf(char* src, const char* format, va_list ap)
 {
@@ -41,8 +47,7 @@ _vsprintf(char* src, const char* format, va_list ap)
           case 'd':
           {
             int num = va_arg(ap, int);
-            char buffer[20] = {0};
-            memset(buffer, '\0', 20);
+            char buffer[20] = {0}; _fillbuf(&buffer[0], 20);
             int len = sprintf(buffer, "%d", num);
             int i = 0;
             for (; i<len; ++i)
@@ -63,8 +68,7 @@ _vsprintf(char* src, const char* format, va_list ap)
           case 'f':
           {
             float num = (float)va_arg(ap, double);
-            char buffer[20] = {0};
-            memset(buffer, '\0', 20);
+            char buffer[20] = {0}; _fillbuf(&buffer[0], 20);
             int len = sprintf(buffer, float_fmt, num);
             int i = 0;
             for (; i<len; ++i)
@@ -96,11 +100,12 @@ const char*
 strfmt(const char* format, ...)
 {
   strfmt_ptr = safe_free(strfmt_ptr);
+  size_t fmt_size = 3072 + strlen(format);
+  strfmt_ptr = safe_malloc(fmt_size*sizeof(char));
 
   va_list args;
   va_start(args, format);
 
-  strfmt_ptr = safe_malloc(1024*sizeof(char));
   vsprintf(strfmt_ptr, format, args);
   va_end(args);
 
@@ -248,9 +253,9 @@ _basename(const char* path)
   if (path == NULL)
   { return NULL; }
 
-  const char *slash = strrchr(path, '/');
-  const char *backslash = strrchr(path, '\\');
-  const char *separator = (slash > backslash) ? slash : backslash;
+  const char* slash = strrchr(path, '/');
+  const char* backslash = strrchr(path, '\\');
+  const char* separator = (slash > backslash) ? slash : backslash;
 
   if (separator == NULL)
   { return (char*)path; }

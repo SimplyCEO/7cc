@@ -9,10 +9,8 @@
 #include "safe_alloc.h"
 #include "toolbox.h"
 
-lua_State* L = NULL;
-
 static void
-l_pushcfunction(int (*signal)(lua_State*), const char* name)
+l_pushcfunction(lua_State* L, int (*signal)(lua_State*), const char* name)
 {
   lua_pushstring(L, name);
   lua_pushcfunction(L, signal);
@@ -20,17 +18,17 @@ l_pushcfunction(int (*signal)(lua_State*), const char* name)
 }
 
 static void
-l_api_functions(void)
+l_api_functions(lua_State* L)
 {
   lua_newtable(L);
   lua_setglobal(L, "cc");
   lua_getglobal(L, "cc");
 
-  l_pushcfunction(l_api_field_init, "field_init");
-  l_pushcfunction(l_api_field_add,  "field_add");
-  l_pushcfunction(l_api_append,     "append");
-  l_pushcfunction(l_api_openxml,    "openxml");
-  l_pushcfunction(l_api_closexml,   "closexml");
+  l_pushcfunction(L, l_api_field_init, "field_init");
+  l_pushcfunction(L, l_api_field_add,  "field_add");
+  l_pushcfunction(L, l_api_append,     "append");
+  l_pushcfunction(L, l_api_openxml,    "openxml");
+  l_pushcfunction(L, l_api_closexml,   "closexml");
 
   lua_pop(L, 1);
 }
@@ -40,29 +38,29 @@ l_getvalue(lua_State* L, const int index)
 {
   const char* value = NULL;
 
-  if      (lua_isstring(L,  index) == true) { value = strfmt("%s",   lua_tostring(L,  index)); }
-  else if (lua_isinteger(L, index) == true) { value = strfmt("%d",   lua_tointeger(L, index)); }
-  else if (lua_isnumber(L,  index) == true) { value = strfmt("%f.1", lua_tonumber(L,  index)); }
+  if      ( lua_isnumber(L, index) == true) { value = strfmt("%s", lua_tostring(L,  index)); }
+  else if ( lua_isstring(L, index) == true) { value = strfmt("%s", lua_tostring(L,  index)); }
+  else if (lua_isinteger(L, index) == true) { value = strfmt("%d", lua_tointeger(L, index)); }
   else if (lua_isboolean(L, index) == true) { value = (lua_toboolean(L, index) == 0) ? "false" : "true"; }
-  else if (lua_istable(L,   index) == true) { value = "table"; }
+  else if (  lua_istable(L, index) == true) { value = "table"; }
   else { value = "nil"; }
 
   return value;
 }
 
-int
+lua_State*
 l_init(void)
 {
-  L = luaL_newstate();
+  lua_State* L = luaL_newstate();
   luaL_openlibs(L);
 
-  l_api_functions();
+  l_api_functions(L);
 
-  return 0;
+  return L;
 }
 
 int
-l_run(const char* filepath)
+l_run(lua_State* L, const char* filepath)
 {
   if (luaL_dofile(L, filepath) != LUA_OK)
   {
@@ -74,7 +72,7 @@ l_run(const char* filepath)
 }
 
 int
-l_free(void)
+l_free(lua_State* L)
 {
   lua_close(L);
 

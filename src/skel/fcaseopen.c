@@ -10,14 +10,15 @@
 # include <errno.h>
 # include <unistd.h>
 
+# include "safe_alloc.h"
 # include "types.h"
 
 /* real_path must have strlen(path) + 3 bytes */
-const char*
-casepath(char const *path)
+char*
+casepath(const char* path)
 {
-  char *real_path = (char*)malloc(sizeof(char)*(strlen(path)+3));
-    char *dir_path = (char*)malloc(sizeof(char)*(strlen(path)+1));
+  char* real_path = safe_malloc((strlen(path)+3)*sizeof(char));
+  char* dir_path = safe_malloc((strlen(path)+1)*sizeof(char));
   strcpy(dir_path, path);
   size_t rp_length = 0;
 
@@ -25,14 +26,14 @@ casepath(char const *path)
    * If given path is found at root level, move towards it and drag the position 1 byte further.
    * Otherwise, move to local directory and set real_path accordingly.
    */  
-  DIR *directory;
+  DIR* directory = NULL;
   switch (dir_path[0])
   {
     case '/':
     {
       directory = opendir("/");
-      dir_path = dir_path + 1;
-    }
+      ++dir_path;
+    } break;
     default:
     {
       directory = opendir(".");
@@ -44,11 +45,11 @@ casepath(char const *path)
   
   /* Get an array of tokens separated by the '/' character. */
   int last = 0;
-  char *token = strsep(&dir_path, "/");
-  while (token)
+  char* token = strsep(&dir_path, "/");
+  while (token != NULL)
   {
     /* If the directory of provided tokens do not exist, then exit function. */
-    if (!directory)
+    if (directory == NULL)
     { goto end; }
     
     /* No file found will return an error. */
@@ -72,9 +73,9 @@ casepath(char const *path)
      * If the given entry is valid, the path will be copied to real_path.
      * If invalid, it will read again.
      */
-    struct dirent *entry = readdir(directory);
+    struct dirent* entry = readdir(directory);
     bool validation = false;
-    while (entry && !validation)
+    while ((entry != NULL) && (validation == false))
     {
       switch (strcasecmp(token, entry->d_name))
       {
@@ -93,7 +94,7 @@ casepath(char const *path)
     }
     
     /* If no entry is found it means the directory does not contain any, therefore it will not reveal a file. */
-    if (!entry)
+    if (entry == NULL)
     {
       strcpy(real_path + rp_length, token);
       rp_length += strlen(token);
@@ -105,11 +106,11 @@ casepath(char const *path)
   }
   
   /* If directory is still loaded, close it. */
-  if (directory)
+  if (directory != NULL)
   { closedir(directory); }
 
 end:
-  free(dir_path);
+  dir_path = safe_free(dir_path);
   return real_path;
 }
 #endif
@@ -119,20 +120,20 @@ end:
  * Any other OS: Read file using case sensitivity filter on given path.
  */
 FILE*
-fcaseopen(char const *path, char const *mode)
+fcaseopen(const char* path, const char* mode)
 {
-  FILE *stream = fopen(path, mode);
-  #if !defined(_WIN32)
-    if (!stream)
+  FILE* stream = fopen(path, mode);
+#if !defined(_WIN32)
+  if (stream != NULL)
+  {
+    char* real_path = casepath(path);
+    if (real_path != NULL)
     {
-      char *real_path = (char*)casepath(path);
-      if (real_path)
-      {
-        stream = fopen(real_path, mode);
-        free(real_path);
-      }
+      stream = fopen(real_path, mode);
+      real_path = safe_free(real_path);
     }
-  #endif
+  }
+#endif
   return stream;
 }
 
@@ -141,19 +142,19 @@ fcaseopen(char const *path, char const *mode)
  * Any other OS: Change directory using case sensitivity filter on given path.
  */
 void
-casechdir(char const *path)
+casechdir(const char* path)
 {
-  #if !defined(_WIN32)
-    char *real_path = (char*)casepath(path);
-    if (real_path)
-    {
-      chdir(real_path);
-      free(real_path);
-    }
-    else
-    { errno = ENOENT; }
-  #else
-    chdir(path);
-  #endif
+#if !defined(_WIN32)
+  char* real_path = casepath(path);
+  if (real_path != NULL)
+  {
+    chdir(real_path);
+    real_path = safe_free(real_path);
+  }
+  else
+  { errno = ENOENT; }
+#else
+  chdir(path);
+#endif
 }
 

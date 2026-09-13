@@ -18,12 +18,22 @@ XMLObject* xml_buffer = NULL;
 static char*
 _strbuff(lua_State* L, const int index)
 {
-  static char output[32] = {0};
-  memset(output, '\0', 32);
+  static char output[64] = {0};
+  memset(output, '\0', 64);
 
-  strncpy(output, l_getvalue(L, index), 32);
+  strncpy(output, l_getvalue(L, index), 64);
 
   return output;
+}
+
+static char*
+_strdupfree(char* src, const char* buffer)
+{
+  src = safe_free(src);
+
+  src = strdup(buffer);
+
+  return src;
 }
 
 static XMLKey**
@@ -40,28 +50,14 @@ _generate_key(lua_State* L, const int index)
     {
       int sub_index = lua_gettop(L);
 
-      if ((lua_type(L, sub_index-1) == LUA_TNUMBER) || (lua_istable(L, sub_index) == true))
+      /* Currently there is no support for array keys. */
+      if (lua_type(L, sub_index - 1) == LUA_TNUMBER) { lua_pop(L, 2); break;    }
+      if (lua_istable(L, sub_index) == false)
       {
-        if (lua_type(L, sub_index-1) == LUA_TNUMBER)
-        {
-          lua_pop(L, 2);
-          break;
-        }
-        lua_pop(L, 1);
-        continue;
+        /* Ignore NULL values even if key exists. */
+        if (strncmp((value = _strdupfree(value, _strbuff(L, sub_index))), "nil", 3) != 0)
+        { xml_key = xml_key_add(xml_key, (name = _strdupfree(name, _strbuff(L, sub_index - 1))), value); }
       }
-
-      name = strdup(_strbuff(L, sub_index-1));
-      value = strdup(_strbuff(L, sub_index));
-
-      /* Ignore NULL values even if key exists. */
-      if (strncmp(value, "nil", 3) == 0)
-      {
-        lua_pop(L, 1);
-        continue;
-      }
-
-      xml_key = xml_key_add(xml_key, name, value);
 
       lua_pop(L, 1);
     }
@@ -88,17 +84,35 @@ _generate_field(lua_State* L, const int index, const char* field)
 
   /* Generate field with keys. */
   xml_key = xml_key_reorder(xml_key, XMLKEY_DEFAULT_ORDER);
-  xml_field = xml_field_add(xml_field, field, (const XMLKey**)xml_key);
+  xml_field = xml_field_add(xml_field, field, xml_key);
   xml_key = xml_key_free(xml_key);
 
   /* Generate sub field if found in table. */
   if (lua_istable(L, index) == true)
   {
-    bool is_table_array = false;
-
     lua_len(L, index);
-    table_length = lua_tointeger(L, -1);
+    bool is_table_array = ((table_length = lua_tointeger(L, -1)) == 0) ? false : true;
     lua_pop(L, 1);
+
+    if (is_table_array == false)
+    {
+      /* lua_next() can not receive numeric keys. */
+      lua_pushnil(L);
+      while (lua_next(L, index) != 0)
+      {
+        int sub_index = lua_gettop(L);
+
+        if (strncmp((value = _strdupfree(value, _strbuff(L, sub_index))), "table", 3) == 0)
+        {
+          XMLObject* xml_sub_field = _generate_field(L, sub_index, (buffer = name = _strdupfree(name, _strbuff(L, sub_index - 1))));
+          xml_field->xml = strins(xml_field->xml, xml_field->cursor, xml_sub_field->xml);
+          xml_sub_field = xml_free(xml_sub_field);
+          buffer = NULL;
+        }
+
+        lua_pop(L, 1);
+      }
+    }
 
     /* Iterate table array. */
     for (i=table_length; i>=1; --i)
@@ -108,52 +122,16 @@ _generate_field(lua_State* L, const int index, const char* field)
       int sub_index = lua_gettop(L);
 
       XMLObject* xml_sub_field = xml_init(NULL);
-      XMLKey** xml_sub_keys = _generate_key(L, sub_index);
+      xml_key = _generate_key(L, sub_index);
 
-      xml_sub_keys = xml_key_reorder(xml_sub_keys, XMLKEY_DEFAULT_ORDER);
-      xml_sub_field = xml_field_add(xml_sub_field, buffer, (const XMLKey**)xml_sub_keys);
-      xml_sub_keys = xml_key_free(xml_sub_keys);
+      xml_key = xml_key_reorder(xml_key, XMLKEY_DEFAULT_ORDER);
+      xml_sub_field = xml_field_add(xml_sub_field, buffer, xml_key);
+      xml_key = xml_key_free(xml_key);
 
       xml_field->xml = strins(xml_field->xml, xml_field->cursor, xml_sub_field->xml);
       xml_sub_field = xml_free(xml_sub_field);
 
       lua_pop(L, 1);
-
-      is_table_array = true;
-    }
-
-    /* lua_next() can not receive numeric keys. */
-    if (is_table_array == false)
-    {
-      lua_pushnil(L);
-      while (lua_next(L, index) != 0)
-      {
-        int sub_index = lua_gettop(L);
-
-        name = strdup(_strbuff(L, sub_index-1));
-        value = strdup(_strbuff(L, sub_index));
-
-        /* Ignore NULL values even if key exists. */
-        if (strncmp(value, "nil", 3) == 0)
-        {
-          lua_pop(L, 1);
-          continue;
-        }
-
-        if (lua_istable(L, sub_index) == true)
-        {
-          buffer = name;
-          XMLObject* xml_sub_field = _generate_field(L, sub_index, name);
-          xml_field->xml = strins(xml_field->xml, xml_field->cursor, xml_sub_field->xml);
-          xml_sub_field = xml_free(xml_sub_field);
-          buffer = NULL;
-
-          lua_pop(L, 1);
-          continue;
-        }
-
-        lua_pop(L, 1);
-      }
     }
   }
 

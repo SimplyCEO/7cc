@@ -65,7 +65,7 @@ l_api_closexml(lua_State* L)
 
   FILE* stream = fopen(l_xml->path, "w");
   size_t i = 0;
-  for (; i<strlen(l_xml->xml); i++)
+  for (; i<strlen(l_xml->xml); ++i)
   { fputc(l_xml->xml[i], stream); }
   fclose(stream);
 

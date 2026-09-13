@@ -13,9 +13,9 @@ extern "C"
 #include <lualib.h>
 
 const char* l_getvalue(lua_State* L, const int index);
-int         l_init(void);
-int         l_run(const char* filepath);
-int         l_free(void);
+lua_State*  l_init(void);
+int         l_run(lua_State* L, const char* filepath);
+int         l_free(lua_State* L);
 
 # if defined(__cplusplus)
 }
