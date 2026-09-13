@@ -129,7 +129,7 @@ xml_key_reorder(XMLKey** xml_key, const char* order)
   new_xml_key = xml_key_init(size);
 
   indexes = safe_malloc(size*sizeof(int));
-  for (i=0; i<=size; ++i)
+  for (i=0; i<size; ++i)
   { indexes[i] = -1; }
 
   for (i=0; order_ptr[i]!='\0'; ++i)
@@ -153,7 +153,7 @@ xml_key_reorder(XMLKey** xml_key, const char* order)
   if (size != n_size)
   {
     int* avoid = safe_malloc(size*sizeof(int));
-    for (i=0; i<=size; ++i)
+    for (i=0; i<size; ++i)
     { avoid[i] = 0; }
 
     for (n=0; n<=size; ++n)
