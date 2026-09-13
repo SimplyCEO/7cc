@@ -38,7 +38,7 @@ xml_init(const char* path)
 XMLObject*
 xml_version(XMLObject* xml)
 {
-  xml->xml = strdup("<?xml version=\"1.00\" encoding=\"UTF-8\"?>");
+  xml->xml = strdup("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
   xml->cursor = strlen(xml->xml);
 
   return xml;

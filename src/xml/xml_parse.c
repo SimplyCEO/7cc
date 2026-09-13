@@ -6,6 +6,9 @@
 #include "toolbox.h"
 #include "types.h"
 
+#define TAB '+'
+#define NL '-'
+
 XMLObject*
 xml_parse_fix_structure(XMLObject* xml)
 {
@@ -119,10 +122,10 @@ xml_parse_identation(XMLObject* xml)
       {
         buffer[b] = c;
         ++b;
-        buffer[b] = ',';
+        buffer[b] = TAB;
         ++b;
 
-        if (xml->xml[i-1] == '?') { --identation; buffer[b] = ','; ++b; }
+        if (xml->xml[i-1] == '?') { --identation; buffer[b] = TAB; ++b; }
         if (xml->xml[i-1] == '/') { --identation; }
         if (xml->xml[i+2] == '/') { --identation; }
 
@@ -130,7 +133,7 @@ xml_parse_identation(XMLObject* xml)
         int t = 0;
         for (; t<=identation; ++t)
         {
-          buffer[b] = '.';
+          buffer[b] = NL;
           ++b;
         }
 
@@ -141,7 +144,7 @@ xml_parse_identation(XMLObject* xml)
 
     switch (buffer[b-1])
     {
-      case ',': case '.': ++i; c = xml->xml[i]; break;
+      case TAB: case NL: ++i; c = xml->xml[i]; break;
     }
 
     buffer[b] = c;
@@ -153,7 +156,7 @@ xml_parse_identation(XMLObject* xml)
   {
     c = buffer[i];
 
-    switch (c) { case ',': case '.': buffer[i] = '\0'; }
+    switch (c) { case TAB: case NL: buffer[i] = '\0'; }
   }
 
   buffer = safe_realloc(buffer, (strlen(buffer)+1)*sizeof(char));
@@ -185,8 +188,8 @@ xml_parse_translate(XMLObject* xml, const char* n, const char* t)
       size_t r = 0;
       switch (c)
       {
-        case ',': for (; r<strlen(n); ++r) { buffer[b] = n[r]; ++b; } continue;
-        case '.': for (; r<strlen(t); ++r) { buffer[b] = t[r]; ++b; } continue;
+        case TAB: for (; r<strlen(n); ++r) { buffer[b] = n[r]; ++b; } continue;
+        case NL: for (; r<strlen(t); ++r) { buffer[b] = t[r]; ++b; } continue;
       }
     }
 
