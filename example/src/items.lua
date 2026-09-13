@@ -18,8 +18,8 @@ local function register_schematic(item)
     effect_group  = {
       tiered = false,
       triggered_effect = {
-        { trigger = "onSelfPrimaryActionEnd", action = "ModifyCVar", cvar = item, operation = "set", value = "1" },
-        { trigger = "onSelfPrimaryActionEnd", action = "GiveExp", exp = "50" }
+        { trigger = "onSelfPrimaryActionEnd", action = "ModifyCVar", cvar = item, operation = "set", value = 1 },
+        { trigger = "onSelfPrimaryActionEnd", action = "GiveExp", exp = 50 }
       }
     }
   }
