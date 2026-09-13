@@ -12,22 +12,27 @@
 lua_State* L = NULL;
 
 static void
+l_pushcfunction(int (*signal)(lua_State*), const char* name)
+{
+  lua_pushstring(L, name);
+  lua_pushcfunction(L, signal);
+  lua_settable(L, -3);
+}
+
+static void
 l_api_functions(void)
 {
-  lua_pushcfunction(L, l_api_field_init);
-  lua_setglobal(L, "field_init");
+  lua_newtable(L);
+  lua_setglobal(L, "cc");
+  lua_getglobal(L, "cc");
 
-  lua_pushcfunction(L, l_api_field_add);
-  lua_setglobal(L, "field_add");
+  l_pushcfunction(l_api_field_init, "field_init");
+  l_pushcfunction(l_api_field_add,  "field_add");
+  l_pushcfunction(l_api_append,     "append");
+  l_pushcfunction(l_api_openxml,    "openxml");
+  l_pushcfunction(l_api_closexml,   "closexml");
 
-  lua_pushcfunction(L, l_api_append);
-  lua_setglobal(L, "append");
-
-  lua_pushcfunction(L, l_api_openxml);
-  lua_setglobal(L, "openxml");
-
-  lua_pushcfunction(L, l_api_closexml);
-  lua_setglobal(L, "closexml");
+  lua_pop(L, 1);
 }
 
 const char*

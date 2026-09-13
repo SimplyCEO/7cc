@@ -33,15 +33,15 @@ local length = #items
 for i=1, length do
   local index = length - i + 1
   local schematic = register_schematic(items[index])
-  local field = field_init("item", schematic)
+  local field = cc.field_init("item", schematic)
   str_field = str_field .. field
 end
 
-openxml()
+cc.openxml()
 
-append("items", str_field)
+cc.append("items", str_field)
 
-closexml()
+cc.closexml()
 
 if (xml ~= nil) then
   print(xml)
