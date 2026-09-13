@@ -96,7 +96,7 @@ _generate_field(lua_State* L, const int index, const char* field)
     lua_pop(L, 1);
 
     /* Iterate table array. */
-    for (i=1; i<=table_length; ++i)
+    for (i=table_length; i>=1; --i)
     {
       lua_rawgeti(L, index, i);
 
