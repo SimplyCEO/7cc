@@ -106,7 +106,7 @@ xml_parse_identation(XMLObject* xml)
   int length = strlen(xml->xml) + 1;
   int identation = -1;
   char c = 0;
-  char* buffer = safe_malloc((length+1024)*sizeof(char));
+  char* buffer = safe_malloc((length*2)*sizeof(char));
 
   for(; i<length; ++i)
   {
@@ -174,7 +174,7 @@ xml_parse_translate(XMLObject* xml, const char* n, const char* t)
   int length = strlen(xml->xml) + 1;
   char c = 0;
   bool replace = false;
-  char* buffer = safe_malloc((length+1024)*sizeof(char));
+  char* buffer = safe_malloc((length*2)*sizeof(char));
 
   for(; i<length; ++i)
   {
