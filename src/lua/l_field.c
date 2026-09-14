@@ -145,13 +145,13 @@ int
 l_api_field_init(lua_State* L)
 {
   if (lua_gettop(L) < 2)
-  { return luaL_error(L, "usage: field_add(\"field_name\", keys)"); }
+  { return luaL_error(L, "usage: cc.field_init(str: \"field_name\", table: keys)"); }
 
   if (lua_isstring(L, 1) == false)
-  { return luaL_error(L, "field_add(): First argument is not a valid string."); }
+  { return luaL_error(L, "cc.field_init(): First argument is not a valid string."); }
 
   if (lua_istable(L, 2) == false)
-  { return luaL_error(L, "field_add(): Second argument is not a valid table."); }
+  { return luaL_error(L, "cc.field_init(): Second argument is not a valid table."); }
 
   const char* field = lua_tostring(L, 1);
   XMLObject* xml_field = _generate_field(L, 2, field);
@@ -170,10 +170,10 @@ l_api_field_add(lua_State* L)
   { return luaL_error(L, "ERROR: No XML open in memory."); }
 
   if (lua_gettop(L) < 1)
-  { return luaL_error(L, "usage: field_add(keys)"); }
+  { return luaL_error(L, "usage: cc.field_add(str: xml_field)"); }
 
   if (lua_isstring(L, 1) == false)
-  { return luaL_error(L, "field_add(): Second argument is not a valid XML field."); }
+  { return luaL_error(L, "cc.field_add(): Not a valid XML field."); }
 
   l_xml->xml = strins(l_xml->xml, l_xml->cursor, lua_tostring(L, 1));
 

@@ -17,13 +17,13 @@ l_api_append(lua_State* L)
 
   int argc = lua_gettop(L);
   if (argc < 2)
-  { return luaL_error(L, "usage: append(\"item\", \"<field></field>\")"); }
+  { return luaL_error(L, "usage: cc.append(str: xpath, str: xml_field)"); }
 
   if (lua_isstring(L, 1) == false)
-  { return luaL_error(L, "append(): First argument is not a valid string."); }
+  { return luaL_error(L, "cc.append(): First argument is not a valid string."); }
 
   if (lua_isstring(L, 2) == false)
-  { return luaL_error(L, "append(): Second argument is not a valid XML field."); }
+  { return luaL_error(L, "cc.append(): Second argument is not a valid XML field."); }
 
   const char* section = lua_tostring(L, 1);
   const char* field = lua_tostring(L, 2);
