@@ -13,7 +13,6 @@
 #include "types.h"
 
 const char* buffer = NULL;
-XMLObject* xml_buffer = NULL;
 
 static char*
 _strbuff(lua_State* L, const int index)
@@ -112,6 +111,12 @@ _generate_field(lua_State* L, const int index, const char* field)
 
         lua_pop(L, 1);
       }
+    }
+    else
+    {
+      xml_field = xml_free(xml_field);
+      xml_field = xml_init(NULL);
+      xml_field->xml = safe_malloc(sizeof(char));
     }
 
     /* Iterate table array. */
