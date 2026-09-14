@@ -3,6 +3,7 @@
 
 #include "lua.h"
 #include "l_append.h"
+#include "l_remove.h"
 #include "l_field.h"
 #include "l_xml.h"
 
@@ -27,6 +28,7 @@ l_api_functions(lua_State* L)
   l_pushcfunction(L, l_api_field_init, "field_init");
   l_pushcfunction(L, l_api_field_add,  "field_add");
   l_pushcfunction(L, l_api_append,     "append");
+  l_pushcfunction(L, l_api_remove,     "remove");
   l_pushcfunction(L, l_api_openxml,    "openxml");
   l_pushcfunction(L, l_api_closexml,   "closexml");
 
