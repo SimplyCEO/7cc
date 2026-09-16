@@ -7,6 +7,7 @@
 #include "l_field.h"
 #include "l_xml.h"
 
+#include "main.h"
 #include "safe_alloc.h"
 #include "toolbox.h"
 
@@ -16,6 +17,48 @@ l_pushcfunction(lua_State* L, int (*signal)(lua_State*), const char* name)
   lua_pushstring(L, name);
   lua_pushcfunction(L, signal);
   lua_settable(L, -3);
+}
+
+static int
+l_api_doinclude(lua_State* L)
+{
+  int argc = lua_gettop(L);
+
+  if (argc != 1)
+  { return luaL_error(L, "usage: doinclude(str: \"lua/file.lua\")"); }
+
+  if (lua_isstring(L, 1) == false)
+  { return luaL_error(L, "doinclude(): Not a path."); }
+
+  int i = 0;
+  const char* buffer = lua_tostring(L, 1);
+  const char* path = NULL;
+
+  /* Open first given path. Open directories using `-I` option if not. */
+  FILE* stream = fopen(buffer, "r");
+  if (stream == NULL)
+  {
+    if (include != NULL)
+    {
+      for (; include[i]!=NULL; ++i)
+      {
+        path = strfmt("%s/%s", include[i], buffer);
+        stream = fopen(path, "r");
+        if (stream != NULL)
+        { break; }
+      }
+    }
+  }
+
+  if (stream != NULL)
+  { fclose(stream); }
+
+  if (path == NULL)
+  { return luaL_error(L, "doinclude(): Not a valid path."); }
+
+  luaL_dofile(L, path);
+
+  return 1;
 }
 
 static void
@@ -55,6 +98,9 @@ l_init(void)
 {
   lua_State* L = luaL_newstate();
   luaL_openlibs(L);
+
+  lua_pushcfunction(L, l_api_doinclude);
+  lua_setglobal(L, "doinclude");
 
   l_api_functions(L);
 
