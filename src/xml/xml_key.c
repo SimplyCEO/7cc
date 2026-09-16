@@ -7,21 +7,21 @@
 #include "safe_alloc.h"
 #include "toolbox.h"
 
-size_t
+XMLKeySize
 xml_key_size(XMLKey** xml_key)
 {
-  size_t size = 0;
+  XMLKeySize size = 0;
 
   while (xml_key[size] != NULL) { ++size; }
 
   return size;
 }
 
-int
+XMLKeySize
 xml_key_search(XMLKey** xml_key, const char* key)
 {
-  int i = 0;
-  int index = -1;
+  XMLKeySize i = 0;
+  XMLKeySize index = -1;
 
   for (; xml_key[i]!=NULL; ++i)
   {
@@ -36,9 +36,9 @@ xml_key_search(XMLKey** xml_key, const char* key)
 }
 
 XMLKey**
-xml_key_init(const size_t size)
+xml_key_init(const XMLKeySize size)
 {
-  size_t i = 0;
+  XMLKeySize i = 0;
 
   XMLKey** xml_key = (XMLKey**)malloc((size+1)*sizeof(XMLKey*));
 
@@ -54,10 +54,10 @@ xml_key_init(const size_t size)
 }
 
 XMLKey**
-xml_key_expand(XMLKey** xml_key, const size_t new_size)
+xml_key_expand(XMLKey** xml_key, const XMLKeySize new_size)
 {
-  size_t i = 0;
-  size_t size = xml_key_size(xml_key);
+  XMLKeySize i = 0;
+  XMLKeySize size = xml_key_size(xml_key);
 
   /* TODO: Shrink the structure. */
   if ((size == new_size) || (size > new_size)) { return xml_key; }
@@ -102,7 +102,7 @@ xml_key_add(XMLKey** xml_key, const char* name, const char* value)
     return xml_key;
   }
 
-  size_t size = xml_key_size(xml_key);
+  XMLKeySize size = xml_key_size(xml_key);
 
   xml_key = xml_key_expand(xml_key, (size+1));
 
@@ -117,18 +117,18 @@ xml_key_reorder(XMLKey** xml_key, const char* order)
   if ((xml_key == NULL) || ((*xml_key)->name == NULL))
   { return xml_key; }
 
-  int         i = 0;
-  int         n = 0;
-  int         size = 0;
-  int         n_size = 0;
-  int*        indexes = NULL;
+  XMLKeySize  i = 0;
+  XMLKeySize  n = 0;
+  XMLKeySize  size = 0;
+  XMLKeySize  n_size = 0;
+  XMLKeySize* indexes = NULL;
   XMLKey**    new_xml_key = NULL;
   const char* order_ptr = order;
 
   size = xml_key_size(xml_key);
   new_xml_key = xml_key_init(size);
 
-  indexes = safe_malloc(size*sizeof(int));
+  indexes = safe_malloc(size*sizeof(XMLKeySize));
   for (i=0; i<size; ++i)
   { indexes[i] = -1; }
 
@@ -140,7 +140,7 @@ xml_key_reorder(XMLKey** xml_key, const char* order)
       if (order_ptr[i] == '\0') { break; }
 
       /* -1 means given key do not exist in `xml_key`. */
-      int index = xml_key_search(xml_key, order_ptr + i);
+      XMLKeySize index = xml_key_search(xml_key, order_ptr + i);
       if (index != -1)
       {
         indexes[n_size] = index;
@@ -152,7 +152,7 @@ xml_key_reorder(XMLKey** xml_key, const char* order)
   /* index missing keys. */
   if (size != n_size)
   {
-    int* avoid = safe_malloc(size*sizeof(int));
+    XMLKeySize* avoid = safe_malloc(size*sizeof(XMLKeySize));
     for (i=0; i<size; ++i)
     { avoid[i] = 0; }
 
@@ -194,7 +194,7 @@ xml_key_free(XMLKey** xml_key)
 {
   if (xml_key != NULL)
   {
-    size_t i = 0;
+    XMLKeySize i = 0;
     while (xml_key[i] != NULL)
     {
       xml_key[i]->name = safe_free(xml_key[i]->name);
