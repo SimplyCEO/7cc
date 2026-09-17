@@ -15,8 +15,7 @@ l_api_remove(lua_State* L)
   if (l_xml == NULL)
   { return luaL_error(L, "ERROR: No XML open in memory."); }
 
-  int argc = lua_gettop(L);
-  if (argc != 1)
+  if (lua_gettop(L) != 1)
   { return luaL_error(L, "usage: cc.remove(str: xpath)"); }
 
   if (lua_isstring(L, 1) == false)
@@ -24,16 +23,17 @@ l_api_remove(lua_State* L)
 
   const char* section = lua_tostring(L, 1);
 
-  XMLObject* remove = xml_init(NULL);
+  XMLSize xml_index = xml_open(NULL);
+  XMLObject* remove = xml_get(xml_index);
   XMLKey** remove_key = xml_key_init(1);
 
   remove_key = xml_key_add(remove_key, "xpath", strfmt("/%s", section));
   remove = xml_field_add(remove, "remove", remove_key);
 
-  l_xml->xml = strins(l_xml->xml, l_xml->cursor, remove->xml);
+  l_xml = xml_write(l_xml_index, remove->xml);
 
   remove_key = xml_key_free(remove_key);
-  remove = xml_free(remove);
+  remove = xml_object_free(remove);
 
   return 1;
 }

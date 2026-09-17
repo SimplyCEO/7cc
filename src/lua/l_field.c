@@ -68,14 +68,15 @@ _generate_key(lua_State* L, const int index)
   return xml_key;
 }
 
-static XMLObject*
+static XMLSize
 _generate_field(lua_State* L, const int index, const char* field)
 {
   int i = 0;
   int table_length = 0;
   char* name = NULL;
   char* value = NULL;
-  XMLObject* xml_field = xml_init(NULL);
+  XMLSize xml_field_index = xml_open(NULL);
+  XMLObject* xml_field = xml_get(xml_field_index);
   XMLKey** xml_key = _generate_key(L, index);
 
   if (buffer == NULL)
@@ -103,9 +104,10 @@ _generate_field(lua_State* L, const int index, const char* field)
 
         if (strncmp((value = _strdupfree(value, _strbuff(L, sub_index))), "table", 3) == 0)
         {
-          XMLObject* xml_sub_field = _generate_field(L, sub_index, (buffer = name = _strdupfree(name, _strbuff(L, sub_index - 1))));
-          xml_field->xml = strins(xml_field->xml, xml_field->cursor, xml_sub_field->xml);
-          xml_sub_field = xml_free(xml_sub_field);
+          XMLSize    xml_sub_field_index = _generate_field(L, sub_index, (buffer = name = _strdupfree(name, _strbuff(L, sub_index - 1))));
+          XMLObject* xml_sub_field = xml_get(xml_sub_field_index);
+          xml_field = xml_write(xml_field_index, xml_sub_field->xml);
+          xml_sub_field = xml_object_free(xml_sub_field);
           buffer = NULL;
         }
 
@@ -114,9 +116,9 @@ _generate_field(lua_State* L, const int index, const char* field)
     }
     else
     {
-      xml_field = xml_free(xml_field);
-      xml_field = xml_init(NULL);
-      xml_field->xml = safe_malloc(sizeof(char));
+      xml_field = xml_object_free(xml_field);
+      xml_field_index = xml_open(NULL);
+      xml_field = xml_get(xml_field_index);
     }
 
     /* Iterate table array. */
@@ -126,15 +128,15 @@ _generate_field(lua_State* L, const int index, const char* field)
 
       int sub_index = lua_gettop(L);
 
-      XMLObject* xml_sub_field = xml_init(NULL);
+      XMLObject* xml_sub_field = xml_get(xml_open(NULL));
       xml_key = _generate_key(L, sub_index);
 
       xml_key = xml_key_reorder(xml_key, XMLKEY_DEFAULT_ORDER);
       xml_sub_field = xml_field_add(xml_sub_field, buffer, xml_key);
       xml_key = xml_key_free(xml_key);
 
-      xml_field->xml = strins(xml_field->xml, xml_field->cursor, xml_sub_field->xml);
-      xml_sub_field = xml_free(xml_sub_field);
+      xml_field = xml_write(xml_field_index, xml_sub_field->xml);
+      xml_sub_field = xml_object_free(xml_sub_field);
 
       lua_pop(L, 1);
     }
@@ -143,13 +145,13 @@ _generate_field(lua_State* L, const int index, const char* field)
   name = safe_free(name);
   value = safe_free(value);
 
-  return xml_field;
+  return xml_field_index;
 }
 
 int
 l_api_field_init(lua_State* L)
 {
-  if (lua_gettop(L) < 2)
+  if (lua_gettop(L) != 2)
   { return luaL_error(L, "usage: cc.field_init(str: \"field_name\", table: keys)"); }
 
   if (lua_isstring(L, 1) == false)
@@ -159,11 +161,9 @@ l_api_field_init(lua_State* L)
   { return luaL_error(L, "cc.field_init(): Second argument is not a valid table."); }
 
   const char* field = lua_tostring(L, 1);
-  XMLObject* xml_field = _generate_field(L, 2, field);
+  XMLSize xml_index = _generate_field(L, 2, field);
 
-  lua_pushstring(L, xml_field->xml);
-
-  xml_field = xml_free(xml_field);
+  lua_pushinteger(L, xml_index);
 
   return 1;
 }
@@ -171,16 +171,19 @@ l_api_field_init(lua_State* L)
 int
 l_api_field_add(lua_State* L)
 {
-  if (l_xml == NULL)
-  { return luaL_error(L, "ERROR: No XML open in memory."); }
+  if (lua_gettop(L) != 2)
+  { return luaL_error(L, "usage: cc.field_add(int: xml_dest_index, int: xml_src_index)"); }
 
-  if (lua_gettop(L) < 1)
-  { return luaL_error(L, "usage: cc.field_add(str: xml_field)"); }
+  if (lua_isinteger(L, 1) == false)
+  { return luaL_error(L, "cc.field_add(): XML destination index not given."); }
 
-  if (lua_isstring(L, 1) == false)
-  { return luaL_error(L, "cc.field_add(): Not a valid XML field."); }
+  if (lua_isinteger(L, 2) == false)
+  { return luaL_error(L, "cc.field_add(): XML source index not given."); }
 
-  l_xml->xml = strins(l_xml->xml, l_xml->cursor, lua_tostring(L, 1));
+  const XMLSize dest = lua_tointeger(L, 1);
+  const XMLSize src = lua_tointeger(L, 2);
+
+  xml_write(dest, xml_get(src)->xml);
 
   return 1;
 }

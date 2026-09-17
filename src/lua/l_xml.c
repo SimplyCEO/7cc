@@ -11,35 +11,53 @@
 #include "safe_alloc.h"
 #include "toolbox.h"
 
+XMLSize    l_xml_index = 0;
 XMLObject* l_xml = NULL;
 
 int
-l_api_openxml(lua_State* L)
+l_api_xml_open(lua_State* L)
 {
   if (l_xml != NULL)
   { return luaL_error(L, "ERROR: XML is already open in memory."); }
 
-  l_xml = xml_init(output);
-  l_xml = xml_version(l_xml);
+  l_xml_index = xml_open(output);
+  l_xml = xml_get(l_xml_index);
 
   /* XML file name field. */
   if (output != NULL)
   {
-    XMLObject* field = xml_init(NULL);
+    XMLSize    field_index = xml_open(NULL);
+    XMLObject* field = xml_get(field_index);
     char* buffer = strdup(basename(output));
     buffer = strcut(buffer, 0, strlen(buffer) - 5);
     field = xml_field_add(field, buffer, NULL);
-    l_xml->xml = strins(l_xml->xml, l_xml->cursor, field->xml);
+    l_xml = xml_write(l_xml_index, field->xml);
     l_xml->cursor += field->cursor;
     buffer = safe_free(buffer);
-    field = xml_free(field);
+    field = xml_object_free(field);
   }
+
+  lua_pushinteger(L, l_xml_index);
 
   return 1;
 }
 
 int
-l_api_closexml(lua_State* L)
+l_api_xml_get(lua_State* L)
+{
+  if (lua_gettop(L) != 1)
+  { return luaL_error(L, "usage: cc.field_add(int: xml_index)"); }
+
+  if (lua_isinteger(L, 1) == false)
+  { return luaL_error(L, "cc.field_add(): XML index not given."); }
+
+  lua_pushstring(L, xml_get(lua_tointeger(L, 1))->xml);
+
+  return 1;
+}
+
+int
+l_api_xml_close(lua_State* L)
 {
   if (l_xml == NULL)
   { return luaL_error(L, "ERROR: No XML open in memory."); }
@@ -59,7 +77,7 @@ l_api_closexml(lua_State* L)
   {
     lua_pushstring(L, l_xml->xml);
     lua_setglobal(L, "xml");
-    xml_free(l_xml);
+    xml_close(-1);
     return 1;
   }
 
@@ -69,7 +87,7 @@ l_api_closexml(lua_State* L)
   { fputc(l_xml->xml[i], stream); }
   fclose(stream);
 
-  l_xml = xml_free(l_xml);
+  xml_close(-1);
 
   return 1;
 }

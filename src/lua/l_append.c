@@ -15,8 +15,7 @@ l_api_append(lua_State* L)
   if (l_xml == NULL)
   { return luaL_error(L, "ERROR: No XML open in memory."); }
 
-  int argc = lua_gettop(L);
-  if (argc < 2)
+  if (lua_gettop(L) != 2)
   { return luaL_error(L, "usage: cc.append(str: xpath, str: xml_field)"); }
 
   if (lua_isstring(L, 1) == false)
@@ -28,18 +27,18 @@ l_api_append(lua_State* L)
   const char* section = lua_tostring(L, 1);
   const char* field = lua_tostring(L, 2);
 
-  XMLObject* append = xml_init(NULL);
+  XMLSize append_index = xml_open(NULL);
+  XMLObject* append = xml_get(append_index);
   XMLKey** append_key = xml_key_init(1);
 
   append_key = xml_key_add(append_key, "xpath", strfmt("/%s", section));
   append = xml_field_add(append, "append", append_key);
 
-  append->xml = strins(append->xml, append->cursor, field);
-
-  l_xml->xml = strins(l_xml->xml, l_xml->cursor, append->xml);
+  append = xml_write(append_index, field);
+  l_xml = xml_write(l_xml_index, append->xml);
 
   append_key = xml_key_free(append_key);
-  append = xml_free(append);
+  append = xml_object_free(append);
 
   return 1;
 }
