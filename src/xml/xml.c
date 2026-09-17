@@ -104,6 +104,16 @@ xml_get(const XMLSize index)
 }
 
 XMLObject*
+xml_set(const XMLSize index, const char* src)
+{
+  xml[index]->xml = safe_free(xml[index]->xml);
+  xml[index]->xml = strdup(src);
+  xml[index]->cursor = strlen(src);
+
+  return xml[index];
+}
+
+XMLObject*
 xml_write(const XMLSize index, const char* src)
 {
   xml[index]->xml = strins(xml[index]->xml, xml[index]->cursor, src);

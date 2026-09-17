@@ -1,5 +1,5 @@
-#if !defined(C_API_APPEND_H)
-# define C_API_APPEND_H
+#if !defined(LUA_FIELD_H)
+# define LUA_FIELD_H
 
 # if defined(__cplusplus)
 extern "C"
@@ -8,7 +8,7 @@ extern "C"
 
 # include "lua.h"
 
-int l_api_append(lua_State* L);
+const char* l_api_field(lua_State* L);
 
 # if defined(__cplusplus)
 }

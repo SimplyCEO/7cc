@@ -2,22 +2,12 @@
 #include <string.h>
 
 #include "lua.h"
-#include "l_append.h"
-#include "l_remove.h"
 #include "l_field.h"
 #include "l_xml.h"
 
 #include "main.h"
 #include "safe_alloc.h"
 #include "toolbox.h"
-
-static void
-l_pushcfunction(lua_State* L, int (*signal)(lua_State*), const char* name)
-{
-  lua_pushstring(L, name);
-  lua_pushcfunction(L, signal);
-  lua_settable(L, -3);
-}
 
 static int
 l_api_doinclude(lua_State* L)
@@ -61,20 +51,31 @@ l_api_doinclude(lua_State* L)
   return 1;
 }
 
+void
+l_pushcfunction(lua_State* L, int (*signal)(lua_State*), const char* name)
+{
+  lua_pushstring(L, name);
+  lua_pushcfunction(L, signal);
+  lua_settable(L, -3);
+}
+
+void
+l_pushtable(lua_State* L, const int index, const char* reference)
+{
+  lua_getglobal(L, reference);
+  lua_setfield(L, index, reference);
+}
+
 static void
 l_api_functions(lua_State* L)
 {
   lua_newtable(L);
   lua_setglobal(L, "cc");
   lua_getglobal(L, "cc");
+  const int index = lua_gettop(L);
 
-  l_pushcfunction(L, l_api_field_init, "field_init");
-  l_pushcfunction(L, l_api_field_add,  "field_add");
-  l_pushcfunction(L, l_api_append,     "append");
-  l_pushcfunction(L, l_api_remove,     "remove");
-  l_pushcfunction(L, l_api_xml_open,    "xml_open");
-  l_pushcfunction(L, l_api_xml_get,     "xml_get");
-  l_pushcfunction(L, l_api_xml_close,   "xml_close");
+  l_pushtable(L, index, l_api_field(L));
+  l_pushtable(L, index, l_api_xml(L));
 
   lua_pop(L, 1);
 }

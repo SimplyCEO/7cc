@@ -12,6 +12,7 @@ extern "C"
 #include <lauxlib.h>
 #include <lualib.h>
 
+void        l_pushcfunction(lua_State* L, int (*signal)(lua_State*), const char* name);
 const char* l_getvalue(lua_State* L, const int index);
 lua_State*  l_init(void);
 int         l_run(lua_State* L, const char* filepath);

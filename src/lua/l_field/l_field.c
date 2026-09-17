@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "lua.h"
-#include "l_xml.h"
+#include "l_field.h"
+#include "l_field_append.h"
+#include "l_field_remove.h"
 
 #include "xml.h"
 #include "xml_field.h"
@@ -148,17 +149,17 @@ _generate_field(lua_State* L, const int index, const char* field)
   return xml_field_index;
 }
 
-int
-l_api_field_init(lua_State* L)
+static int
+l_api_field_create(lua_State* L)
 {
   if (lua_gettop(L) != 2)
-  { return luaL_error(L, "usage: cc.field_init(str: \"field_name\", table: keys)"); }
+  { return luaL_error(L, "usage: cc.field.create(str: \"field_name\", table: keys)"); }
 
   if (lua_isstring(L, 1) == false)
-  { return luaL_error(L, "cc.field_init(): First argument is not a valid string."); }
+  { return luaL_error(L, "cc.field.create(): First argument is not a valid string."); }
 
   if (lua_istable(L, 2) == false)
-  { return luaL_error(L, "cc.field_init(): Second argument is not a valid table."); }
+  { return luaL_error(L, "cc.field.create(): Second argument is not a valid table."); }
 
   const char* field = lua_tostring(L, 1);
   XMLSize xml_index = _generate_field(L, 2, field);
@@ -168,17 +169,17 @@ l_api_field_init(lua_State* L)
   return 1;
 }
 
-int
+static int
 l_api_field_add(lua_State* L)
 {
   if (lua_gettop(L) != 2)
-  { return luaL_error(L, "usage: cc.field_add(int: xml_dest_index, int: xml_src_index)"); }
+  { return luaL_error(L, "usage: cc.field.add(int: xml_dest_index, int: xml_src_index)"); }
 
   if (lua_isinteger(L, 1) == false)
-  { return luaL_error(L, "cc.field_add(): XML destination index not given."); }
+  { return luaL_error(L, "cc.field.add(): XML destination index not given."); }
 
   if (lua_isinteger(L, 2) == false)
-  { return luaL_error(L, "cc.field_add(): XML source index not given."); }
+  { return luaL_error(L, "cc.field.add(): XML source index not given."); }
 
   const XMLSize dest = lua_tointeger(L, 1);
   const XMLSize src = lua_tointeger(L, 2);
@@ -186,5 +187,24 @@ l_api_field_add(lua_State* L)
   xml_write(dest, xml_get(src)->xml);
 
   return 1;
+}
+
+const char*
+l_api_field(lua_State* L)
+{
+  const char* section = "field";
+
+  lua_newtable(L);
+  lua_setglobal(L, section);
+  lua_getglobal(L, section);
+
+  l_pushcfunction(L, l_api_field_create, "create");
+  l_pushcfunction(L, l_api_field_add,    "add");
+  l_pushcfunction(L, l_api_field_append, "append");
+  l_pushcfunction(L, l_api_field_remove, "remove");
+
+  lua_pop(L, 1);
+
+  return section;
 }
 

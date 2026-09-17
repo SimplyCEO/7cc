@@ -55,8 +55,8 @@ PWD           := $(shell pwd | sed 's/ /\\ /g')
 OBJ_DIR       := $(PWD)/.obj
 SRC_DIR       := $(PWD)/src
 BIN_DIR       := $(PWD)/bin
-DIRS          := bin .obj .obj/core .obj/lua .obj/skel .obj/xml
-HEADERS       := -I./src/core -I./src/lua -I./src/skel -I./src/xml
+DIRS          := bin .obj .obj/core .obj/lua .obj/lua/l_field .obj/skel .obj/xml
+HEADERS       := -I./src/core -I./src/lua -I./src/lua/l_field -I./src/skel -I./src/xml
 LIBRARIES     := -lm -llua
 
 _TARGETS      := 7cc
