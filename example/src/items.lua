@@ -1,3 +1,6 @@
+local xml_file = xml.open()
+
+-- NAME ITEM ARRAY
 local items = {
   "armorNerdHelmet",
   "armorNerdOutfit",
@@ -6,42 +9,51 @@ local items = {
   "meleeWpnBatonT2StunBaton",
 };
 
-local function register_schematic(item)
+-- REGISTER `<item>...</item>` FIELD INDEX TEMPLATE
+local function register_schematic(item_name)
   local properties = {
-    name = item .. "Schematic",
-    property = {
-      { name = "Extends", value = "schematicNoQualityMaster" },
-      { name = "CreativeMode", value = "Player" },
-      { name = "CustomIcon", value = item },
-      { name = "Unlocks", value = item }
-    },
-    effect_group  = {
-      tiered = false,
-      triggered_effect = {
-        { trigger = "onSelfPrimaryActionEnd", action = "ModifyCVar", cvar = item, operation = "set", value = 1 },
-        { trigger = "onSelfPrimaryActionEnd", action = "GiveExp", exp = 50 }
-      }
-    }
+    index = field.create("item",
+            {
+              name = item_name .. "Schematic",
+              property = {
+                { name = "Extends", value = "schematicNoQualityMaster" },
+                { name = "CreativeMode", value = "Player" },
+                { name = "CustomIcon", value = item },
+                { name = "Unlocks", value = item }
+              },
+              effect_group  = {
+                tiered = false,
+                triggered_effect = {
+                  { trigger = "onSelfPrimaryActionEnd", action = "ModifyCVar", cvar = item, operation = "set", value = 1 },
+                  { trigger = "onSelfPrimaryActionEnd", action = "GiveExp", exp = 50 }
+                }
+              }
+            }),
+    xml = nil
   }
+
+  properties.xml = xml.get(properties.index)
 
   return properties
 end
 
-local str_field = ""
-
-local length = #items
-for i=1, length do
-  local index = length - i + 1
-  local schematic = register_schematic(items[index])
-  local field = cc.field_init("item", schematic)
-  str_field = str_field .. field
+local schematics = { index = field.append("items", -1), xml = "" }
+for i=1, #items do
+  local schematic = register_schematic(items[i])
+  schematics.xml = schematics.xml .. schematic.xml
+  -- xml.close(schematic.index)
 end
 
-cc.openxml()
-cc.append("items", str_field)
-cc.closexml()
+-- ADD GENERATED XML TO BACKEND XML OBJECT
+field.add(schematics.index, schematics.xml)
+-- xml.close(schematics.index)
 
-if (xml ~= nil) then
-  print(xml)
+-- ADD OBJECT XML TO FILE XML OBJECT
+field.add(xml_file, schematics.index)
+xml.close(xml_file)
+
+-- INTERACTIVE MODE STRING (nil ONLY WHEN COMPILING OBJECT)
+if (cc_output ~= nil) then
+  print(cc_output)
 end
 

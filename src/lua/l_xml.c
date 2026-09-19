@@ -53,10 +53,10 @@ static int
 l_api_xml_get(lua_State* L)
 {
   if (lua_gettop(L) != 1)
-  { return luaL_error(L, "usage: cc.xml.get(int: xml_index)"); }
+  { return luaL_error(L, "\n" "usage: cc.xml.get(int: xml_index)"); }
 
   if (lua_isinteger(L, 1) == false)
-  { return luaL_error(L, "cc.xml.get(): XML index not given."); }
+  { return luaL_error(L, "\n" "cc.xml.get(): XML index not given."); }
 
   lua_pushstring(L, xml_get(lua_tointeger(L, 1))->xml);
 
@@ -67,32 +67,15 @@ static int
 l_api_xml_set(lua_State* L)
 {
   if (lua_gettop(L) != 2)
-  { return luaL_error(L, "usage: cc.xml.set(int: xml_index, str: xml_raw)"); }
+  { return luaL_error(L, "\n" "usage: cc.xml.set(int: xml_index, str: xml_raw)"); }
 
   if (lua_isinteger(L, 1) == false)
-  { return luaL_error(L, "cc.xml.set(): XML index not given."); }
+  { return luaL_error(L, "\n" "cc.xml.set(): XML index not given."); }
 
   if (lua_isstring(L, 2) == false)
-  { return luaL_error(L, "cc.xml.set(): Raw XML not given."); }
+  { return luaL_error(L, "\n" "cc.xml.set(): Raw XML not given."); }
 
   xml_set(lua_tointeger(L, 1), lua_tostring(L, 2));
-
-  return 1;
-}
-
-static int
-l_api_xml_write(lua_State* L)
-{
-  if (lua_gettop(L) != 2)
-  { return luaL_error(L, "usage: cc.xml.write(int: xml_index, str: xml_raw)"); }
-
-  if (lua_isinteger(L, 1) == false)
-  { return luaL_error(L, "cc.xml.write(): XML index not given."); }
-
-  if (lua_isstring(L, 2) == false)
-  { return luaL_error(L, "cc.xml.write(): Raw XML not given."); }
-
-  xml_write(lua_tointeger(L, 1), lua_tostring(L, 2));
 
   return 1;
 }
@@ -101,7 +84,7 @@ static int
 l_api_xml_close(lua_State* L)
 {
   if (l_xml == NULL)
-  { return luaL_error(L, "ERROR: No XML open in memory."); }
+  { return luaL_error(L, "\n" "ERROR: No XML open in memory."); }
 
   l_xml = xml_parse_fix_structure(l_xml);
   l_xml = xml_parse_identation(l_xml);
@@ -145,7 +128,6 @@ l_api_xml(lua_State* L)
   l_pushcfunction(L, l_api_xml_open,  "open");
   l_pushcfunction(L, l_api_xml_get,   "get");
   l_pushcfunction(L, l_api_xml_set,   "set");
-  l_pushcfunction(L, l_api_xml_write, "write");
   l_pushcfunction(L, l_api_xml_close, "close");
 
   lua_pop(L, 1);

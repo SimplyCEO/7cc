@@ -153,13 +153,13 @@ static int
 l_api_field_create(lua_State* L)
 {
   if (lua_gettop(L) != 2)
-  { return luaL_error(L, "usage: cc.field.create(str: \"field_name\", table: keys)"); }
+  { return luaL_error(L, "\n" "usage: cc.field.create(str: \"field_name\", table: keys)"); }
 
   if (lua_isstring(L, 1) == false)
-  { return luaL_error(L, "cc.field.create(): First argument is not a valid string."); }
+  { return luaL_error(L, "\n" "cc.field.create(): First argument is not a valid string."); }
 
   if (lua_istable(L, 2) == false)
-  { return luaL_error(L, "cc.field.create(): Second argument is not a valid table."); }
+  { return luaL_error(L, "\n" "cc.field.create(): Second argument is not a valid table."); }
 
   const char* field = lua_tostring(L, 1);
   XMLSize xml_index = _generate_field(L, 2, field);
@@ -173,18 +173,35 @@ static int
 l_api_field_add(lua_State* L)
 {
   if (lua_gettop(L) != 2)
-  { return luaL_error(L, "usage: cc.field.add(int: xml_dest_index, int: xml_src_index)"); }
+  {
+    return luaL_error(L, "\n"
+      "usage: cc.field.add(int: xml_dest_index, int: xml_src_index)\n"
+      "   or: cc.field.add(int: xml_dest_index, str: xml_src_field)");
+  }
 
   if (lua_isinteger(L, 1) == false)
-  { return luaL_error(L, "cc.field.add(): XML destination index not given."); }
+  { return luaL_error(L, "\n" "cc.field.add(): XML destination index not given."); }
 
+  bool isinteger = true;
   if (lua_isinteger(L, 2) == false)
-  { return luaL_error(L, "cc.field.add(): XML source index not given."); }
+  {
+    if (lua_isstring(L, 2) == false)
+    { return luaL_error(L, "\n" "cc.field.add(): Second argument is neither a valid XML index nor a XML field."); }
+    isinteger = false;
+  }
 
   const XMLSize dest = lua_tointeger(L, 1);
-  const XMLSize src = lua_tointeger(L, 2);
+  const char* xml_buffer = NULL;
 
-  xml_write(dest, xml_get(src)->xml);
+  if (isinteger == true)
+  {
+    const XMLSize src = lua_tointeger(L, 2);
+    xml_buffer = (src != -1) ? xml_get(src)->xml : "";
+  }
+  else
+  { xml_buffer = lua_tostring(L, 2); }
+
+  xml_write(dest, xml_buffer);
 
   return 1;
 }
