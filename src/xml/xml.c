@@ -22,8 +22,8 @@ static XMLObject*
 xml_object_alloc(const char* path)
 {
   XMLObject* xml_object = (XMLObject*)malloc(sizeof(XMLObject));
-  xml_object->path = NULL;
-  xml_object->xml = NULL;
+  xml_object->path = safe_malloc(sizeof(char));
+  xml_object->xml = safe_malloc(sizeof(char));
   xml_object->cursor = 0;
   xml_object->garbage = false;
 
@@ -38,6 +38,7 @@ xml_object_alloc(const char* path)
       strcpy(buffer, basename(path));
     }
 
+    xml_object->path = safe_free(xml_object->path);
     xml_object->path = strdup(buffer);
     buffer = safe_free(buffer);
 
@@ -74,8 +75,6 @@ xml_open(const char* path)
       {
         xml[i] = safe_free(xml[i]);
         xml[i] = xml_object_alloc(path);
-        if (xml[i]->path == NULL) { xml[i]->path = safe_malloc(sizeof(char)); }
-        if (xml[i]->xml == NULL) { xml[i]->xml = safe_malloc(sizeof(char)); }
         return i;
       }
     }
