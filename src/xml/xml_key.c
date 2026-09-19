@@ -25,10 +25,10 @@ xml_key_search(XMLKey** xml_key, const char* key)
 
   for (; xml_key[i]!=NULL; ++i)
   {
-    char* ptr_string = xml_key[i]->name;
-    size_t length = strlen(ptr_string);
+    size_t length = 0;
+    for (; key[length]!=';'; ++length) {}
 
-    if (strncmp(ptr_string, key, length) == 0)
+    if (strncmp(xml_key[i]->name, key, length) == 0)
     { index = i; break; }
   }
 
