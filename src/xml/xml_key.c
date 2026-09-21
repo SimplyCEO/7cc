@@ -26,7 +26,7 @@ xml_key_search(XMLKey** xml_key, const char* key)
   for (; xml_key[i]!=NULL; ++i)
   {
     size_t length = 0;
-    for (; key[length]!=';'; ++length) {}
+    for (; key[length]!='\0'; ++length) { if (key[length+1] == ';') { break; } }
 
     if (strncmp(xml_key[i]->name, key, length) == 0)
     { index = i; break; }
