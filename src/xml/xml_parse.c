@@ -7,7 +7,7 @@
 #include "types.h"
 
 #define TAB '+'
-#define NL '-'
+#define NL '`'
 
 XMLObject*
 xml_parse_fix_structure(XMLObject* xml)
