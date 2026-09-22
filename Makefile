@@ -1,15 +1,22 @@
 # GENERAL
-CC          := clang
-OSNAME      := unix32
-BUILD_TYPE  := Debug
-BUILTIN_LUA := 1
-BUILD64     := 0
+CC           := clang
+OSARCH       := i386
+OSNAME       := unix32
+OSTYPE       := linux
+BUILD_TYPE   := Debug
+BUILTIN_LIBC := 0
+BUILTIN_LUA  := 0
+BUILD64      := 0
 
 ifeq ($(OSNAME),unix64)
+	OSARCH  = amd64
+	OSTYPE  = linux
 	BUILD64 = 1
 endif
 
 ifeq ($(OSNAME),win64)
+	OSARCH  = amd64
+	OSTYPE  = win
 	BUILD64 = 1
 endif
 
@@ -27,8 +34,8 @@ DIRS    := $(shell echo $(OBJECTS) | tr ' ' '\n' | xargs -n1 dirname | sort -u) 
 TARGETS := 7cc
 
 # COMPILER AND LINKER
-CFLAGS    := -Wall -Wextra -Werror
-HEADERS   := -I./src/core -I./src/lua -I./src/lua/l_field -I./src/skel -I./src/xml -I./vendor/lua
+CFLAGS    := -DLUA_32BITS -Wall -Wextra -Werror
+HEADERS   := -I./src/core -I./src/lua -I./src/lua/l_field -I./src/skel -I./src/xml
 LIBRARIES := -llua -lm
 LDFLAGS   :=
 
@@ -50,11 +57,17 @@ else ifeq ($(BUILD_TYPE),Debug)
 endif
 
 ifeq ($(BUILD64),0)
-	CFLAGS += -m32 -DLUA_32BITS
+	CFLAGS += -m32
 	LDFLAGS += -m32
 endif
 
+ifeq ($(BUILTIN_LIBC),1)
+	HEADERS += -I./vendor/musl/$(OSARCH)-musl-$(OSTYPE)/include
+	LDFLAGS += -L./vendor/musl/$(OSARCH)-musl-$(OSTYPE)/lib
+endif
+
 ifeq ($(BUILTIN_LUA),1)
+	HEADERS += -I./vendor/lua/include
 	LDFLAGS += -L./vendor/lua/$(OSNAME)
 endif
 
@@ -71,11 +84,11 @@ all: directories $(TARGETS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@printf "[CC] $(GREEN)Building object '%s'$(RESET_COLOUR)\n" "$<"
-	@$(CC) -static $(CFLAGS) $(HEADERS) -c $< -o $@
+	@$(CC) $(CFLAGS) $(HEADERS) -c $< -o $@
 
 $(TARGETS): $(OBJECTS)
 	@printf "[LD] $(BOLD_GREEN)Linking binary '%s'$(RESET_COLOUR)\n" "$@"
-	@$(CC) -static $^ $(LDFLAGS) $(LIBRARIES) $(HEADERS) -o $(BIN_DIR)/$@
+	@$(CC) $^ $(LDFLAGS) $(LIBRARIES) $(HEADERS) -o $(BIN_DIR)/$@
 
 directories: $(DIRS)
 
