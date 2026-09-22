@@ -25,23 +25,19 @@ l_api_doinclude(lua_State* L)
   const char* path = NULL;
 
   /* Open first given path. Open directories using `-I` option if not. */
-  FILE* stream = fopen(buffer, "r");
-  if (stream == NULL)
+  if ((include != NULL) && (iffile(buffer) == true))
   {
-    if (include != NULL)
-    {
-      for (; include[i]!=NULL; ++i)
-      {
-        path = strfmt("%s/%s", include[i], buffer);
-        stream = fopen(path, "r");
-        if (stream != NULL)
-        { break; }
-      }
-    }
-  }
+    FILE* stream = fopen(buffer, "r");
 
-  if (stream != NULL)
-  { fclose(stream); }
+    for (; include[i]!=NULL; ++i)
+    {
+      path = strfmt("%s/%s", include[i], buffer);
+      if (iffile(path) == true)
+      { break; }
+    }
+
+    fclose(stream);
+  }
 
   if (path == NULL)
   { return luaL_error(L, "doinclude(): Not a valid path."); }

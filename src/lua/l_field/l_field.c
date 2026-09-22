@@ -21,7 +21,7 @@ _strbuff(lua_State* L, const int index)
   static char output[64] = {0};
   memset(output, '\0', 64);
 
-  strncpy(output, l_getvalue(L, index), 64);
+  strncpy(output, l_getvalue(L, index), 63);
 
   return output;
 }

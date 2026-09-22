@@ -15,13 +15,13 @@ char* strfmt_ptr = NULL;
 
 #if (__STDC_VERSION__ < 199901L) && !defined(__cplusplus)
 static void
-_fillbuf(char* buffer, const size_t size)
+_tb_fillbuf(char* buffer, const size_t size)
 {
   memset(buffer, '\0', size);
 }
 
 int32_t
-_vsprintf(char* src, const char* format, va_list ap)
+_tb_vsprintf(char* src, const char* format, va_list ap)
 {
   int count = 0;
   char* float_fmt = "%f";
@@ -47,7 +47,7 @@ _vsprintf(char* src, const char* format, va_list ap)
           case 'd':
           {
             int num = va_arg(ap, int);
-            char buffer[20] = {0}; _fillbuf(&buffer[0], 20);
+            char buffer[20] = {0}; _tb_fillbuf(&buffer[0], 20);
             int len = sprintf(buffer, "%d", num);
             int i = 0;
             for (; i<len; ++i)
@@ -68,7 +68,7 @@ _vsprintf(char* src, const char* format, va_list ap)
           case 'f':
           {
             float num = (float)va_arg(ap, double);
-            char buffer[20] = {0}; _fillbuf(&buffer[0], 20);
+            char buffer[20] = {0}; _tb_fillbuf(&buffer[0], 20);
             int len = sprintf(buffer, float_fmt, num);
             int i = 0;
             for (; i<len; ++i)
@@ -97,7 +97,7 @@ _vsprintf(char* src, const char* format, va_list ap)
 #endif
 
 const char*
-strfmt(const char* format, ...)
+_tb_strfmt(const char* format, ...)
 {
   strfmt_ptr = safe_free(strfmt_ptr);
   size_t fmt_size = 3072 + strlen(format);
@@ -116,7 +116,7 @@ strfmt(const char* format, ...)
 
 /* Duplicate given string memory contents. */
 char*
-_strdup(const char* str)
+_tb_strdup(const char* str)
 {
   if (str == NULL)
   { return NULL; }
@@ -129,7 +129,7 @@ _strdup(const char* str)
 
 /* Remove strict character after given position. */
 char*
-_strsub(char* src, const size_t pos, const char c)
+_tb_strsub(char* src, const size_t pos, const char c)
 {
   size_t i = 0;
   size_t size = strlen(src) + 1;
@@ -155,7 +155,7 @@ _strsub(char* src, const size_t pos, const char c)
 }
 
 char*
-_strlwr(char* src)
+_tb_strlwr(char* src)
 {
   char* output = src;
   char* str = strdup(src);
@@ -171,7 +171,7 @@ _strlwr(char* src)
 }
 
 char*
-_strupr(char* src)
+_tb_strupr(char* src)
 {
   char* output = src;
   char* str = strdup(src);
@@ -188,7 +188,7 @@ _strupr(char* src)
 
 /* Insert string after given position. */
 char*
-_strins(char* src, const size_t pos, const char* ins)
+_tb_strins(char* src, const size_t pos, const char* ins)
 {
   if (ins == NULL)
   { return src; }
@@ -217,7 +217,7 @@ _strins(char* src, const size_t pos, const char* ins)
 
 /* Copy contents of string using given positions. */
 char*
-_strcut(char* src, const size_t n1, const size_t n2)
+_tb_strcut(char* src, const size_t n1, const size_t n2)
 {
   size_t size = n2 - n1 + 1;
   char* ptr = safe_malloc(size*sizeof(char));
@@ -233,13 +233,13 @@ _strcut(char* src, const size_t n1, const size_t n2)
 
 /* Delete contents of string using given positions. */
 char*
-_strdel(char* src, const size_t n1, const size_t n2)
+_tb_strdel(char* src, const size_t n1, const size_t n2)
 {
   size_t size = strlen(src) + 1;
   char* ptr = safe_malloc(size*sizeof(char));
 
   strncpy(ptr, src, n1);
-  strncat(ptr, src + n2, strlen(src+n2) + 1);
+  strncat(ptr, src + n2, size + n2);
 
   src = safe_free(src);
   src = ptr;
@@ -248,7 +248,7 @@ _strdel(char* src, const size_t n1, const size_t n2)
 }
 
 char*
-_basename(const char* path)
+_tb_basename(const char* path)
 {
   if (path == NULL)
   { return NULL; }
@@ -264,7 +264,7 @@ _basename(const char* path)
 }
 
 char*
-_dirname(const char* path)
+_tb_dirname(const char* path)
 {
   if (path == NULL)
   { return NULL; }
@@ -280,7 +280,9 @@ _dirname(const char* path)
     { return result; }
   }
 
-  const size_t eos = strlen(path) - strlen(_basename(path)) - 1;
+  const size_t path_len = strlen(path);
+  const size_t path_base_len = strlen(_tb_basename(path));
+  const size_t eos = (path_len == path_base_len) ? path_len - 1 : path_len - path_base_len - 1;
 
   strncpy(result, path, eos);
   result[eos] = '\0';
@@ -289,33 +291,23 @@ _dirname(const char* path)
 }
 
 bool
-iffile(const char* path)
+_tb_iffile(const char* path)
 {
   FILE* stream = fopen(path, "rb");
   if (stream == NULL)
-  { return true; }
+  { return false; }
   fclose(stream);
 
-  return false;
+  return true;
 }
 
 bool
-ifdir(const char* path)
+_tb_ifdir(const char* path)
 {
   struct stat statbuf;
   if (stat(path, &statbuf) != 0)
-  { return true; }
-
-  return ((S_ISDIR(statbuf.st_mode) == 0) ? true : false);
-}
-
-bool
-ifsymlink(const char* path)
-{
-  struct stat statbuf;
-  if (lstat(path, &statbuf) < 0)
   { return false; }
 
-  return ((S_ISLNK(statbuf.st_mode) == 0) ? true : false);
+  return ((S_ISDIR(statbuf.st_mode) == 0) ? false : true);
 }
 

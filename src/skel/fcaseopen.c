@@ -1,5 +1,7 @@
 #define _DEFAULT_SOURCE
 
+#include <unistd.h>
+
 #include "fcaseopen.h"
 
 #if !defined(_WIN32)
@@ -8,7 +10,6 @@
 
 # include <dirent.h>
 # include <errno.h>
-# include <unistd.h>
 
 # include "safe_alloc.h"
 # include "types.h"
