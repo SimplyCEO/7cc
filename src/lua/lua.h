@@ -6,8 +6,6 @@ extern "C"
 {
 # endif
 
-#define LUA_32BITS
-
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>

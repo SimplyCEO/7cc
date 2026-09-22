@@ -23,8 +23,10 @@ Makefile:
 - CC: C compiler;
 - CFLAGS: C compiler flags;
 - LDFLAGS: Linker flags;
+- OSNAME: The Operating System type name (unix32: BSD/Linux, win64: ReactOS/Windows);
+- BUILD64: Compile binary for 64-bit architecture;
 - BUILD_TYPE: `Debug` or `Release`;
-- BUILD_STATIC: Force statically linking objects;
+- BUILTIN_LUA: Use the compiled library from repository `vendor`;
 - INSTALL_PREFIX: Installation prefix for built binary;
 
 Installation
@@ -46,8 +48,6 @@ make install
 TODO
 ----
 
-- Develop the entire game `Data` XML API;
 - Provide 7CC API documentation;
-- Crossplatform code linking;
 - Release stable version to public;
 

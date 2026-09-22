@@ -1,96 +1,91 @@
-# CORE (needed to compile)
+# GENERAL
+CC          := clang
+OSNAME      := unix32
+BUILD_TYPE  := Debug
+BUILTIN_LUA := 1
+BUILD64     := 0
 
-ifndef CC
-$(warning C compiler not detected. Setting default compiler to GCC...)
-	CC :=	gcc
+ifeq ($(OSNAME),unix64)
+	BUILD64 = 1
 endif
 
-# CORE OPTIONAL (compiler flags)
-
-ifndef BUILD_TYPE
-	BUILD_TYPE := Debug
+ifeq ($(OSNAME),win64)
+	BUILD64 = 1
 endif
 
-ifndef CFLAGS
-	ifeq ($(BUILD_STATIC), 1)
-		LDFLAGS += -static
-	endif
+# DIRECTORIES
+SRC_DIR        := src
+OBJ_DIR        := .obj
+BIN_DIR        := bin
+INSTALL_PREFIX := build
+PWD            := $(shell pwd)
 
-	ifeq ($(CC), tcc)
-		CFLAGS := -std=c89
-	else
-		CFLAGS := --std=c89
-	endif
+# FILES
+SOURCES := $(shell find $(SRC_DIR) -name '*.c' | sort)
+OBJECTS := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SOURCES))
+DIRS    := $(shell echo $(OBJECTS) | tr ' ' '\n' | xargs -n1 dirname | sort -u) bin
+TARGETS := 7cc
+
+# COMPILER AND LINKER
+CFLAGS    := -Wall -Wextra -Werror
+HEADERS   := -I./src/core -I./src/lua -I./src/lua/l_field -I./src/skel -I./src/xml -I./vendor/lua
+LIBRARIES := -llua -lm
+LDFLAGS   :=
+
+ifeq ($(CC),tcc)
+	CFLAGS += -std=c89
+else
+	CFLAGS += --std=c89
 endif
 
-ifeq ($(BUILD_TYPE), Release)
-	ifneq ($(CC), tcc)
+ifeq ($(BUILD_TYPE),Release)
+	ifneq ($(CC),tcc)
 		CFLAGS += -O2
 	endif
-else ifeq ($(BUILD_TYPE), Debug)
-	ifneq ($(CC), tcc)
+else ifeq ($(BUILD_TYPE),Debug)
+	ifneq ($(CC),tcc)
 		CFLAGS += -O0
 	endif
 	CFLAGS += -g3 -ggdb -Wall
 endif
 
-CFLAGS += -Wall -Wextra -Werror
-
-ifndef __STDC_VERSION__
-	__STDC_VERSION__ := 199002L
+ifeq ($(BUILD64),0)
+	CFLAGS += -m32 -DLUA_32BITS
+	LDFLAGS += -m32
 endif
 
-ifndef INSTALL_PREFIX
-	INSTALL_PREFIX := ./build/
+ifeq ($(BUILTIN_LUA),1)
+	LDFLAGS += -L./vendor/lua/$(OSNAME)
 endif
 
-ESCAPE        := \033
-GREEN         := $(ESCAPE)[32m
-BOLD_GREEN    := $(ESCAPE)[1;32m
-BLUE          := $(ESCAPE)[34m
-BOLD_BLUE     := $(ESCAPE)[1;34m
-RESET_COLOUR  := $(ESCAPE)[0m
-
-PWD           := $(shell pwd | sed 's/ /\\ /g')
-OBJ_DIR       := $(PWD)/.obj
-SRC_DIR       := $(PWD)/src
-BIN_DIR       := $(PWD)/bin
-DIRS          := bin .obj .obj/core .obj/lua .obj/lua/l_field .obj/skel .obj/xml
-HEADERS       := -I./src/core -I./src/lua -I./src/lua/l_field -I./src/skel -I./src/xml
-LIBRARIES     := -lm -llua
-
-_TARGETS      := 7cc
-_SOURCES      := $(shell find $(SRC_DIR) -name "*.c")
-_SOURCES      := $(patsubst $(SRC_DIR)/%,%,$(_SOURCES))
-_OBJECTS      := $(patsubst %.c,%.o,$(_SOURCES))
-
-TARGETS       := $(addprefix $(BIN_DIR)/, $(_TARGETS))
-SOURCES       := $(addprefix $(SRC_DIR)/, $(_SOURCES))
-OBJECTS       := $(addprefix $(OBJ_DIR)/, $(_OBJECTS))
+# COLOUR ESCAPE CODES
+GREEN        := \033[32m
+BOLD_GREEN   := \033[1;32m
+BLUE         := \033[34m
+BOLD_BLUE    := \033[1;34m
+RESET_COLOUR := \033[0m
 
 .PHONY: all
 
 all: directories $(TARGETS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	@printf "[CC] ""$(GREEN)""Building object '$<'""$(RESET_COLOUR)""\n"
-	@$(CC) $(CFLAGS) $(HEADERS) -c $< -o $@
+	@printf "[CC] $(GREEN)Building object '%s'$(RESET_COLOUR)\n" "$<"
+	@$(CC) -static $(CFLAGS) $(HEADERS) -c $< -o $@
 
 $(TARGETS): $(OBJECTS)
-	@printf "[LD] ""$(BOLD_GREEN)""Linking binary '$@'""$(RESET_COLOUR)""\n"
-	@$(CC) $^ $(LIBRARIES) $(HEADERS) $(LDFLAGS) -o $@
+	@printf "[LD] $(BOLD_GREEN)Linking binary '%s'$(RESET_COLOUR)\n" "$@"
+	@$(CC) -static $^ $(LDFLAGS) $(LIBRARIES) $(HEADERS) -o $(BIN_DIR)/$@
 
 directories: $(DIRS)
 
 $(DIRS):
-	@printf "[DIR] ""$(BLUE)""Directory ""$(BOLD_BLUE)""'$@'""$(RESET_COLOUR)$(BLUE)"" created""$(RESET_COLOUR).""\n"
+	@printf "[DIR] $(BLUE) Directory $(BOLD_BLUE)'%s'$(RESET_COLOUR)$(BLUE) created$(RESET_COLOUR).\n" "$@"
 	@mkdir -p $(PWD)/$@
 
-install:
-	@install -m 755 bin/$(_TARGETS) $(INSTALL_PREFIX)/bin/
+install: $(TARGETS)
+	@install -m 755 $(BIN_DIR)/7cc $(INSTALL_PREFIX)/bin/
 
 clean:
-	@rm -rv $(BIN_DIR) 2>/dev/null || true
-	@rm -rv $(OBJ_DIR) 2>/dev/null || true
-	@rm -rv build/ 2>/dev/null || true
+	@rm -rv $(BIN_DIR) $(OBJ_DIR) build 2>/dev/null || true
 
