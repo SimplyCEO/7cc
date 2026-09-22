@@ -20,29 +20,28 @@ make BUILD_TYPE=Release
 ```
 
 Makefile:
-- CC: C compiler;
+- CC: C compiler (`gcc`/\*`clang`/`tcc`);
 - CFLAGS: C compiler flags;
 - LDFLAGS: Linker flags;
-- OSNAME: The Operating System type name (unix32: BSD/Linux, win64: ReactOS/Windows);
-- BUILD64: Compile binary for 64-bit architecture;
-- BUILD_TYPE: `Debug` or `Release`;
-- BUILTIN_LUA: Use the compiled library from repository `vendor`;
-- INSTALL_PREFIX: Installation prefix for built binary;
+- OSNAME: The Operating System type name (\*`unix32`/`unix64`/`win64`);
+- BUILD64: Compile binary for 64-bit architecture (\*`0`/`1`);
+- BUILD_TYPE: Define flags based on type (\*`Debug`/`Release`/`None`);
+- BUILTIN_LUA: Use the compiled library from repository `vendor` (`0`/\*`1`);
+- INSTALL_PREFIX: Installation prefix for built binary (`/usr/local`);
 
 Installation
 ------------
 
 The compiled binary will be located inside `bin` directory.
-It can also be installed using the `INSTALL_PREFIX=/usr/local` option.
 
 ```sh
-su -c 'make INSTALL_PREFIX=/usr/local install'
+su -c 'make install'
 ```
 
 For portable installation:
 
 ```sh
-make install
+make INSTALL_PREFIX=./build install
 ```
 
 TODO

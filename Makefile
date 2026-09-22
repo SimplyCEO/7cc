@@ -17,7 +17,7 @@ endif
 SRC_DIR        := src
 OBJ_DIR        := .obj
 BIN_DIR        := bin
-INSTALL_PREFIX := build
+INSTALL_PREFIX := /usr/local
 PWD            := $(shell pwd)
 
 # FILES
@@ -84,7 +84,8 @@ $(DIRS):
 	@mkdir -p $(PWD)/$@
 
 install: $(TARGETS)
-	@install -m 755 $(BIN_DIR)/7cc $(INSTALL_PREFIX)/bin/
+	@mkdir -p $(INSTALL_PREFIX)/bin
+	@install -m 755 $(BIN_DIR)/7cc $(INSTALL_PREFIX)/bin
 
 clean:
 	@rm -rv $(BIN_DIR) $(OBJ_DIR) build 2>/dev/null || true
