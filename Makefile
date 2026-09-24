@@ -96,7 +96,7 @@ $(DIRS):
 	@printf "[DIR] $(BLUE) Directory $(BOLD_BLUE)'%s'$(RESET_COLOUR)$(BLUE) created$(RESET_COLOUR).\n" "$@"
 	@mkdir -p $(PWD)/$@
 
-install: $(TARGETS)
+install:
 	@mkdir -p $(INSTALL_PREFIX)/bin
 	@install -m 755 $(BIN_DIR)/7cc $(INSTALL_PREFIX)/bin
 
