@@ -8,16 +8,32 @@ BUILTIN_LIBC := 1
 BUILTIN_LUA  := 1
 BUILD64      := 0
 
+ifeq ($(OSNAME),unix32)
+	OSARCH  = i386
+	OSTYPE  = linux
+	BUILD64 = 0
+endif
+
 ifeq ($(OSNAME),unix64)
 	OSARCH  = amd64
 	OSTYPE  = linux
 	BUILD64 = 1
 endif
 
-ifeq ($(OSNAME),win64)
-	OSARCH  = amd64
-	OSTYPE  = win
-	BUILD64 = 1
+ifeq ($(OSNAME),mingw32)
+	CC           = gcc
+	OSARCH       = i386
+	OSTYPE       = mingw
+	BUILTIN_LIBC = 0
+	BUILD64      = 0
+endif
+
+ifeq ($(OSNAME),mingw64)
+	CC           = gcc
+	OSARCH       = amd64
+	OSTYPE       = mingw
+	BUILTIN_LIBC = 0
+	BUILD64      = 1
 endif
 
 # DIRECTORIES
@@ -34,10 +50,14 @@ DIRS    := $(shell echo $(OBJECTS) | tr ' ' '\n' | xargs -n1 dirname | sort -u) 
 TARGETS := 7cc
 
 # COMPILER AND LINKER
-CFLAGS    := -DBUILD64=$(BUILD64) -DLUA_32BITS -Wall -Wextra -Werror
+CFLAGS    := -DBUILD64=$(BUILD64) -DLUA_32BITS -Wall -Wextra
 HEADERS   := -I./src/core -I./src/lua -I./src/lua/l_field -I./src/skel -I./src/xml
 LIBRARIES := -llua -lm
 LDFLAGS   :=
+
+ifneq ($(CC),gcc)
+	CFLAGS += -Werror
+endif
 
 ifeq ($(CC),tcc)
 	CFLAGS += -std=c89
