@@ -34,7 +34,7 @@ DIRS    := $(shell echo $(OBJECTS) | tr ' ' '\n' | xargs -n1 dirname | sort -u) 
 TARGETS := 7cc
 
 # COMPILER AND LINKER
-CFLAGS    := -DLUA_32BITS -Wall -Wextra -Werror
+CFLAGS    := -DBUILD64=$(BUILD64) -DLUA_32BITS -Wall -Wextra -Werror
 HEADERS   := -I./src/core -I./src/lua -I./src/lua/l_field -I./src/skel -I./src/xml
 LIBRARIES := -llua -lm
 LDFLAGS   :=
@@ -84,11 +84,11 @@ all: directories $(TARGETS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@printf "[CC] $(GREEN)Building object '%s'$(RESET_COLOUR)\n" "$<"
-	@$(CC) $(CFLAGS) $(HEADERS) -c $< -o $@
+	@$(CC) $(HEADERS) -c $< $(CFLAGS) -o $@
 
 $(TARGETS): $(OBJECTS)
 	@printf "[LD] $(BOLD_GREEN)Linking binary '%s'$(RESET_COLOUR)\n" "$@"
-	@$(CC) $^ $(LDFLAGS) $(LIBRARIES) $(HEADERS) -o $(BIN_DIR)/$@
+	@$(CC) $(HEADERS) $^ $(LDFLAGS) $(LIBRARIES) -o $(BIN_DIR)/$@
 
 directories: $(DIRS)
 

@@ -9,10 +9,14 @@
 #include "xml_field.h"
 #include "xml_key.h"
 
+#include "main.h"
 #include "safe_alloc.h"
 #include "toolbox.h"
 #include "types.h"
 
+#if (BUILD64 == 0)
+XMLSize xml32_index = 0;
+#endif
 const char* buffer = NULL;
 
 static char*
@@ -51,7 +55,14 @@ _generate_key(lua_State* L, const int index)
       int sub_index = lua_gettop(L);
 
       /* Currently there is no support for array keys. */
-      if (lua_type(L, sub_index - 1) == LUA_TNUMBER) { lua_pop(L, 2); break;    }
+      if (lua_type(L, sub_index - 1) == LUA_TNUMBER)
+      {
+#if (BUILD64 == 0)
+        xml32_index = -32;
+#endif
+        lua_pop(L, 2);
+        break;
+      }
       if (lua_istable(L, sub_index) == false)
       {
         /* Ignore NULL values even if key exists. */
@@ -80,6 +91,15 @@ _generate_field(lua_State* L, const int index, const char* field)
   XMLObject* xml_field = xml_get(xml_field_index);
   XMLKey** xml_key = _generate_key(L, index);
 
+#if (BUILD64 == 0)
+  if (xml32_index == -32)
+  {
+    xml_field = xml_object_free(xml_field);
+    xml_key = xml_key_free(xml_key);
+    return xml32_index;
+  }
+#endif
+
   if (buffer == NULL)
   { buffer = field; }
 
@@ -88,15 +108,44 @@ _generate_field(lua_State* L, const int index, const char* field)
   xml_field = xml_field_add(xml_field, field, xml_key);
   xml_key = xml_key_free(xml_key);
 
-  /* Generate sub field if found in table. */
-  if (lua_istable(L, index) == true)
+  do
   {
-    lua_len(L, index);
-    bool is_table_array = ((table_length = lua_tointeger(L, -1)) == 0) ? false : true;
-    lua_pop(L, 1);
-
-    if (is_table_array == false)
+    /* Generate sub field if found in table. */
+    if (lua_istable(L, index) == true)
     {
+      lua_len(L, index);
+      bool is_table_array = ((table_length = (int)lua_tointeger(L, -1)) != 0);
+      lua_pop(L, 1);
+
+      if (is_table_array == true)
+      {
+        xml_field = xml_object_free(xml_field);
+        xml_field_index = xml_open(NULL);
+        xml_field = xml_get(xml_field_index);
+
+        /* Iterate table array. */
+        for (i=table_length; i>=1; --i)
+        {
+          lua_rawgeti(L, index, i);
+
+          int sub_index = lua_gettop(L);
+
+          XMLObject* xml_sub_field = xml_get(xml_open(NULL));
+          xml_key = _generate_key(L, sub_index);
+
+          xml_key = xml_key_reorder(xml_key, XMLKEY_DEFAULT_ORDER);
+          xml_sub_field = xml_field_add(xml_sub_field, buffer, xml_key);
+          xml_key = xml_key_free(xml_key);
+
+          xml_field = xml_write(xml_field_index, xml_sub_field->xml);
+          xml_sub_field = xml_object_free(xml_sub_field);
+
+          lua_pop(L, 1);
+        }
+
+        break;
+      }
+
       /* lua_next() can not receive numeric keys. */
       lua_pushnil(L);
       while (lua_next(L, index) != 0)
@@ -105,7 +154,17 @@ _generate_field(lua_State* L, const int index, const char* field)
 
         if (strncmp((value = _strdupfree(value, _strbuff(L, sub_index))), "table", 3) == 0)
         {
-          XMLSize    xml_sub_field_index = _generate_field(L, sub_index, (buffer = name = _strdupfree(name, _strbuff(L, sub_index - 1))));
+          buffer = name = _strdupfree(name, _strbuff(L, sub_index - 1));
+          XMLSize xml_sub_field_index = _generate_field(L, sub_index, name);
+
+#if (BUILD64 == 0)
+          if ((xml32_index = xml_sub_field_index) == -32)
+          {
+            lua_pop(L, 2);
+            break;
+          }
+#endif
+
           XMLObject* xml_sub_field = xml_get(xml_sub_field_index);
           xml_field = xml_write(xml_field_index, xml_sub_field->xml);
           xml_sub_field = xml_object_free(xml_sub_field);
@@ -115,33 +174,8 @@ _generate_field(lua_State* L, const int index, const char* field)
         lua_pop(L, 1);
       }
     }
-    else
-    {
-      xml_field = xml_object_free(xml_field);
-      xml_field_index = xml_open(NULL);
-      xml_field = xml_get(xml_field_index);
-    }
-
-    /* Iterate table array. */
-    for (i=table_length; i>=1; --i)
-    {
-      lua_rawgeti(L, index, i);
-
-      int sub_index = lua_gettop(L);
-
-      XMLObject* xml_sub_field = xml_get(xml_open(NULL));
-      xml_key = _generate_key(L, sub_index);
-
-      xml_key = xml_key_reorder(xml_key, XMLKEY_DEFAULT_ORDER);
-      xml_sub_field = xml_field_add(xml_sub_field, buffer, xml_key);
-      xml_key = xml_key_free(xml_key);
-
-      xml_field = xml_write(xml_field_index, xml_sub_field->xml);
-      xml_sub_field = xml_object_free(xml_sub_field);
-
-      lua_pop(L, 1);
-    }
   }
+  while (0);
 
   name = safe_free(name);
   value = safe_free(value);
@@ -163,6 +197,20 @@ l_api_field_create(lua_State* L)
 
   const char* field = lua_tostring(L, 1);
   XMLSize xml_index = _generate_field(L, 2, field);
+
+#if (BUILD64 == 0)
+  if (xml32_index == -32)
+  {
+    if (warning_p >= 2)
+    {
+      warning("\n"
+        "cc.field.create(): lua_rawgeti() (32‑bit) may return arrays as nil.\n"
+        "                   Generate each field separately to avoid this issue."
+      );
+    }
+    xml32_index = 0;
+  }
+#endif
 
   lua_pushinteger(L, xml_index);
 

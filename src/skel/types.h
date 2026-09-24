@@ -37,7 +37,8 @@ typedef unsigned int   uint32_t;
 # define COLOUR_CYAN         "\033[36m"
 # define COLOUR_BOLD_CYAN    "\033[1;36m"
 
-# define errprintf(str) fprintf(stderr, "%sERROR%s: %s\n", COLOUR_RED, COLOUR_RESET, str);
+# define warning(str) printf("%sWARNING%s: %s\n", COLOUR_YELLOW, COLOUR_RESET, str);
+# define error(str) fprintf(stderr, "%sERROR%s: %s\n", COLOUR_RED, COLOUR_RESET, str);
 
 # if defined(__cplusplus)
 }

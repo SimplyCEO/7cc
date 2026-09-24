@@ -15,6 +15,7 @@
 
 bool compile = false;
 char** include = NULL;
+int warning_p = 0;
 char* output = NULL;
 int identation = 0;
 
@@ -29,6 +30,7 @@ help(void)
     "  -c             compile only - generate an xml file\n"
     "  -o outfile     set output filename\n"
     "  -i identation  single line (-1), hard tabs (*0), soft tabs(1)\n"
+    "  -Wwarning      warning priority. none (*0), deprecate (1), incompatibility (2), all (3)\n"
     "  -v --version show version\n"
     "Preprocessor options:\n"
     "  -Idir          add Lua `doinclude` path `dir`\n", PROJECT_MAJOR, PROJECT_MINOR, PROJECT_PATCH
@@ -71,6 +73,7 @@ main(int argc, char* argv[])
     { .name = "compile-only", .has_arg = no_argument,       .flag = NULL, .val = 'c' },
     { .name = "outfile",      .has_arg = required_argument, .flag = NULL, .val = 'o' },
     { .name = "identation",   .has_arg = required_argument, .flag = NULL, .val = 'i' },
+    { .name = "warning",      .has_arg = required_argument, .flag = NULL, .val = 'W' },
     { .name = "help",         .has_arg = no_argument,       .flag = NULL, .val = 'h' },
     { .name = "version",      .has_arg = no_argument,       .flag = NULL, .val = 'v' },
     { .name = "include",      .has_arg = required_argument, .flag = NULL, .val = 'I' }
@@ -78,13 +81,20 @@ main(int argc, char* argv[])
 
   int opt = 0;
   int opt_index = 0;
-  while ((opt=getopt_long(argc, argv, "co:i:vhI:", opts, &opt_index)) != -1)
+  while ((opt=getopt_long(argc, argv, "co:i:W:vhI:", opts, &opt_index)) != -1)
   {
     switch (opt)
     {
       case 'c': compile = true; break;
       case 'o': output = strdup(optarg); break;
       case 'i': identation = atoi(optarg); break;
+      case 'W':
+      {
+        if      (strcmp(optarg, "none") == 0)            { warning_p = 0; }
+        else if (strcmp(optarg, "deprecate") == 0)       { warning_p = 1; }
+        else if (strcmp(optarg, "incompatibility") == 0) { warning_p = 2; }
+        else if (strcmp(optarg, "all") == 0)             { warning_p = 3; }
+      } break;
       case 'v': version(); return 0;
       case 'I':
       {

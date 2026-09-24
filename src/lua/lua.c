@@ -47,6 +47,18 @@ l_api_doinclude(lua_State* L)
   return 1;
 }
 
+static int
+l_api_get_architecture(lua_State* L)
+{
+#if (BUILD64 == 0)
+  lua_pushstring(L, "32");
+#else
+  lua_pushstring(L, "64");
+#endif
+
+  return 1;
+}
+
 void
 l_pushcfunction(lua_State* L, int (*signal)(lua_State*), const char* name)
 {
@@ -68,8 +80,10 @@ l_api_functions(lua_State* L)
   lua_newtable(L);
   lua_setglobal(L, "cc");
   lua_getglobal(L, "cc");
+
   const int index = lua_gettop(L);
 
+  l_pushcfunction(L, l_api_get_architecture, "get_architecture");
   l_pushtable(L, index, l_api_field(L));
   l_pushtable(L, index, l_api_xml(L));
 
@@ -110,7 +124,7 @@ l_run(lua_State* L, const char* filepath)
 {
   if (luaL_dofile(L, filepath) != LUA_OK)
   {
-    errprintf(lua_tostring(L, -1));
+    error(lua_tostring(L, -1));
     return 1;
   }
 

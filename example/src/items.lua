@@ -18,19 +18,32 @@ local function register_schematic(item_name)
               property = {
                 { name = "Extends", value = "schematicNoQualityMaster" },
                 { name = "CreativeMode", value = "Player" },
-                { name = "CustomIcon", value = item },
-                { name = "Unlocks", value = item }
+                { name = "CustomIcon", value = item_name },
+                { name = "Unlocks", value = item_name }
               },
               effect_group  = {
                 tiered = false,
                 triggered_effect = {
-                  { trigger = "onSelfPrimaryActionEnd", action = "ModifyCVar", cvar = item, operation = "set", value = 1 },
+                  { trigger = "onSelfPrimaryActionEnd", action = "ModifyCVar", cvar = item_name, operation = "set", value = 1 },
                   { trigger = "onSelfPrimaryActionEnd", action = "GiveExp", exp = 50 }
                 }
               }
             }),
     xml = nil
   }
+
+  if (cc.get_architecture() == "32") then
+    field.add(properties.index, field.create("property", { name = "Extends", value = "schematicNoQualityMaster" }))
+    field.add(properties.index, field.create("property", { name = "CreativeMode", value = "Player" }))
+    field.add(properties.index, field.create("property", { name = "CustomIcon", value = item_name }))
+    field.add(properties.index, field.create("property", { name = "Unlocks", value = item_name }))
+
+    local effect_group = field.create("effect_group", { tiered = false })
+    field.add(effect_group, field.create("triggered_effect", { trigger = "onSelfPrimaryActionEnd", action = "ModifyCVar", cvar = item_name, operation = "set", value = 1 }))
+    field.add(effect_group, field.create("triggered_effect", { trigger = "onSelfPrimaryActionEnd", action = "GiveExp", exp = 50 }))
+
+    field.add(properties.index, effect_group)
+  end
 
   properties.xml = xml.get(properties.index)
 
