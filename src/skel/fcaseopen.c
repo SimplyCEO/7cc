@@ -1,12 +1,11 @@
 #define _DEFAULT_SOURCE
 
-#include <unistd.h>
-
 #include "fcaseopen.h"
 
 #if !defined(_WIN32)
 # include <stdlib.h>
 # include <string.h>
+# include <unistd.h>
 
 # include <dirent.h>
 # include <errno.h>
@@ -114,17 +113,12 @@ end:
   dir_path = safe_free(dir_path);
   return real_path;
 }
-#endif
 
-/*
- * Windows: Read file from given path.
- * Any other OS: Read file using case sensitivity filter on given path.
- */
 FILE*
 fcaseopen(const char* path, const char* mode)
 {
   FILE* stream = fopen(path, mode);
-#if !defined(_WIN32)
+
   if (stream != NULL)
   {
     char* real_path = casepath(path);
@@ -134,7 +128,7 @@ fcaseopen(const char* path, const char* mode)
       real_path = safe_free(real_path);
     }
   }
-#endif
+
   return stream;
 }
 
@@ -145,7 +139,6 @@ fcaseopen(const char* path, const char* mode)
 void
 casechdir(const char* path)
 {
-#if !defined(_WIN32)
   char* real_path = casepath(path);
   if (real_path != NULL)
   {
@@ -154,8 +147,6 @@ casechdir(const char* path)
   }
   else
   { errno = ENOENT; }
-#else
-  chdir(path);
-#endif
 }
+#endif
 
