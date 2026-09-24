@@ -11,38 +11,42 @@ local items = {
 
 -- REGISTER `<item>...</item>` FIELD INDEX TEMPLATE
 local function register_schematic(item_name)
-  local properties = {
-    index = field.create("item",
-            {
-              name = item_name .. "Schematic",
-              property = {
-                { name = "Extends", value = "schematicNoQualityMaster" },
-                { name = "CreativeMode", value = "Player" },
-                { name = "CustomIcon", value = item_name },
-                { name = "Unlocks", value = item_name }
-              },
-              effect_group  = {
-                tiered = false,
-                triggered_effect = {
-                  { trigger = "onSelfPrimaryActionEnd", action = "ModifyCVar", cvar = item_name, operation = "set", value = 1 },
-                  { trigger = "onSelfPrimaryActionEnd", action = "GiveExp", exp = 50 }
-                }
-              }
-            }),
-    xml = nil
+  local xml_field = {
+    property = {
+      { name = "Extends", value = "schematicNoQualityMaster" },
+      { name = "CreativeMode", value = "Player" },
+      { name = "CustomIcon", value = item_name },
+      { name = "Unlocks", value = item_name }
+    },
+    effect_group  = {
+      tiered = false,
+      triggered_effect = {
+        { trigger = "onSelfPrimaryActionEnd", action = "ModifyCVar", cvar = item_name, operation = "set", value = 1 },
+        { trigger = "onSelfPrimaryActionEnd", action = "GiveExp", exp = 50 }
+      }
+    }
   }
 
+  local properties = { index = nil, xml = nil }
+
   if (cc.get_architecture() == "32") then
-    field.add(properties.index, field.create("property", { name = "Extends", value = "schematicNoQualityMaster" }))
-    field.add(properties.index, field.create("property", { name = "CreativeMode", value = "Player" }))
-    field.add(properties.index, field.create("property", { name = "CustomIcon", value = item_name }))
-    field.add(properties.index, field.create("property", { name = "Unlocks", value = item_name }))
+    properties.index = field.create("item", { name = item_name .. "Schematic" })
+    for i=1, 4 do field.add(properties.index, field.create("property", xml_field.property[i])) end
 
     local effect_group = field.create("effect_group", { tiered = false })
-    field.add(effect_group, field.create("triggered_effect", { trigger = "onSelfPrimaryActionEnd", action = "ModifyCVar", cvar = item_name, operation = "set", value = 1 }))
-    field.add(effect_group, field.create("triggered_effect", { trigger = "onSelfPrimaryActionEnd", action = "GiveExp", exp = 50 }))
+    for i=1, 2 do field.add(effect_group, field.create("triggered_effect", xml_field.effect_group.triggered_effect[i])) end
 
     field.add(properties.index, effect_group)
+  end
+
+  if (properties.index == nil) then
+    properties.index = field.create("item",
+      {
+        name = item_name .. "Schematic",
+        property = xml_field.property,
+        effect_group = xml_field.effect_group
+      }
+    )
   end
 
   properties.xml = xml.get(properties.index)
