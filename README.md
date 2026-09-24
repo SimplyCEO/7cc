@@ -16,7 +16,7 @@ Building
 ```sh
 git clone https://codeberg.org/SimplyCEO/7cc.git
 cd 7cc/
-make BUILD_TYPE=Release
+make
 ```
 
 Makefile:
@@ -27,9 +27,9 @@ Makefile:
 | LDFLAGS          | Linker flags                                    | User defined               |                                         |
 | OSNAME           | The Operating System type name                  | `unix32`/`unix64`/`win64`  | `unix32`                                |
 | BUILD64          | Compile binary for 64-bit architecture          | `0`/`1`                    | `0`                                     |
-| BUILD_TYPE       | Define flags based on type                      | `Debug`/`Release`/`None`   | `Debug`                                 |
-| BUILTIN_LIBC     | Use the compiled musl toolchain from `vendor`   | `0`/`1`                    | `0`                                     |
-| BUILTIN_LUA      | Use the compiled library from `vendor`          | `0`/`1`                    | `0`                                     |
+| BUILD_TYPE       | Define flags based on type                      | `Debug`/`Release`/`None`   | `Release`                               |
+| BUILTIN_LIBC     | Use the compiled musl toolchain from `vendor`   | `0`/`1`                    | `1`                                     |
+| BUILTIN_LUA      | Use the compiled library from `vendor`          | `0`/`1`                    | `1`                                     |
 | INSTALL_PREFIX   | Installation prefix for built binary            | User defined               | `/usr/local`                            |
 
 Installation

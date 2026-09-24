@@ -3,9 +3,9 @@ CC           := clang
 OSARCH       := i386
 OSNAME       := unix32
 OSTYPE       := linux
-BUILD_TYPE   := Debug
-BUILTIN_LIBC := 0
-BUILTIN_LUA  := 0
+BUILD_TYPE   := Release
+BUILTIN_LIBC := 1
+BUILTIN_LUA  := 1
 BUILD64      := 0
 
 ifeq ($(OSNAME),unix64)
@@ -63,7 +63,7 @@ endif
 
 ifeq ($(BUILTIN_LIBC),1)
 	HEADERS += -I./vendor/musl/$(OSARCH)-musl-$(OSTYPE)/include
-	LDFLAGS += -L./vendor/musl/$(OSARCH)-musl-$(OSTYPE)/lib
+	LDFLAGS += -static ./vendor/musl/lua-compatibility.c -L./vendor/musl/$(OSARCH)-musl-$(OSTYPE)/lib
 endif
 
 ifeq ($(BUILTIN_LUA),1)
