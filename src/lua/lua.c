@@ -5,9 +5,15 @@
 #include "l_field.h"
 #include "l_xml.h"
 
+#include "xml.h"
+#include "xml_field.h"
+
 #include "main.h"
 #include "safe_alloc.h"
 #include "toolbox.h"
+
+XMLSize    l_xml_index = 0;
+XMLObject* l_xml = NULL;
 
 static int
 l_api_doinclude(lua_State* L)
@@ -115,6 +121,23 @@ l_init(void)
   lua_setglobal(L, "doinclude");
 
   l_api_functions(L);
+
+  l_xml_index = xml_open(output);
+  l_xml = xml_get(l_xml_index);
+
+  /* XML file name field. */
+  if (output != NULL)
+  {
+    XMLSize    field_index = xml_open(NULL);
+    XMLObject* field = xml_get(field_index);
+    char* buffer = strdup(basename(output));
+    buffer = strcut(buffer, 0, strlen(buffer) - 5);
+    field = xml_field_add(field, buffer, NULL);
+    l_xml = xml_write(l_xml_index, field->xml);
+    l_xml->cursor += field->cursor;
+    buffer = safe_free(buffer);
+    field = xml_object_free(field);
+  }
 
   return L;
 }

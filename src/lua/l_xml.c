@@ -4,43 +4,15 @@
 #include "l_xml.h"
 
 #include "xml.h"
-#include "xml_field.h"
 #include "xml_parse.h"
 
 #include "main.h"
 #include "safe_alloc.h"
 #include "toolbox.h"
 
-XMLSize    l_xml_index = 0;
-XMLObject* l_xml = NULL;
-
 static int
 l_api_xml_open(lua_State* L)
 {
-  if (l_xml == NULL)
-  {
-    l_xml_index = xml_open(output);
-    l_xml = xml_get(l_xml_index);
-
-    /* XML file name field. */
-    if (output != NULL)
-    {
-      XMLSize    field_index = xml_open(NULL);
-      XMLObject* field = xml_get(field_index);
-      char* buffer = strdup(basename(output));
-      buffer = strcut(buffer, 0, strlen(buffer) - 5);
-      field = xml_field_add(field, buffer, NULL);
-      l_xml = xml_write(l_xml_index, field->xml);
-      l_xml->cursor += field->cursor;
-      buffer = safe_free(buffer);
-      field = xml_object_free(field);
-    }
-
-    lua_pushinteger(L, l_xml_index);
-
-    return 1;
-  }
-
   XMLSize xml_buffer_index = xml_open(NULL);
 
   xml_write(xml_buffer_index, "");
@@ -83,35 +55,47 @@ l_api_xml_set(lua_State* L)
 static int
 l_api_xml_close(lua_State* L)
 {
-  if (l_xml == NULL)
-  { return luaL_error(L, "\n" "ERROR: No XML open in memory."); }
+  if (lua_gettop(L) != 1)
+  { return luaL_error(L, "\n" "usage: cc.xml.close(int: xml_index)"); }
 
-  l_xml = xml_parse_fix_structure(l_xml);
-  l_xml = xml_parse_identation(l_xml);
+  if (lua_isinteger(L, 1) == false)
+  { return luaL_error(L, "\n" "cc.xml.close(): XML index not given."); }
 
-  switch (identation)
+  const int index = lua_tointeger(L, 1);
+
+  if ((index == l_xml_index) && (l_xml != NULL))
   {
-    case -1: l_xml = xml_parse_translate(l_xml, "", ""); break;
-    case 1: l_xml = xml_parse_translate(l_xml, "\n", "  "); break;
-    default: l_xml = xml_parse_translate(l_xml, "\n", "\t"); break;
-  }
+    l_xml = xml_parse_fix_structure(l_xml);
+    l_xml = xml_parse_identation(l_xml);
 
-  /* View XML file instead of compiling object. */
-  if (compile == false)
-  {
-    lua_pushstring(L, l_xml->xml);
-    lua_setglobal(L, "cc_output");
+    switch (identation)
+    {
+      case -1: l_xml = xml_parse_translate(l_xml, "", ""); break;
+      case 1: l_xml = xml_parse_translate(l_xml, "\n", "  "); break;
+      default: l_xml = xml_parse_translate(l_xml, "\n", "\t"); break;
+    }
+
+    /* View XML file instead of compiling object. */
+    if (compile == false)
+    {
+      lua_pushstring(L, l_xml->xml);
+      lua_setglobal(L, "cc_output");
+      xml_close(-1);
+      return 1;
+    }
+
+    FILE* stream = fopen(l_xml->path, "w");
+    size_t i = 0;
+    for (; i<strlen(l_xml->xml); ++i)
+    { fputc(l_xml->xml[i], stream); }
+    fclose(stream);
+
     xml_close(-1);
+
     return 1;
   }
 
-  FILE* stream = fopen(l_xml->path, "w");
-  size_t i = 0;
-  for (; i<strlen(l_xml->xml); ++i)
-  { fputc(l_xml->xml[i], stream); }
-  fclose(stream);
-
-  xml_close(-1);
+  xml_close(index);
 
   return 1;
 }
