@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <string.h>
 
 #include "lua.h"
@@ -31,18 +30,14 @@ l_api_doinclude(lua_State* L)
   const char* path = NULL;
 
   /* Open first given path. Open directories using `-I` option if not. */
-  if ((include != NULL) && (iffile(buffer) == true))
+  if (include != NULL)
   {
-    FILE* stream = fopen(buffer, "r");
-
     for (; include[i]!=NULL; ++i)
     {
       path = strfmt("%s/%s", include[i], buffer);
-      if (iffile(path) == true)
-      { break; }
+      if (iffile(path) == false) { path = NULL; continue; }
+      break;
     }
-
-    fclose(stream);
   }
 
   if (path == NULL)
