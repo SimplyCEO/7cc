@@ -31,10 +31,10 @@ local function register_schematic(item_name)
     properties.index = field.create("item", { name = item_name .. "Schematic" })
 
     local effect_group = field.create("effect_group", { tiered = false })
-    for i=1, 2 do field.add(effect_group, field.create("triggered_effect", xml_field.effect_group.triggered_effect[i])) end
+    for i=1, 2 do field.add(effect_group, field.create("triggered_effect", xml_field.effect_group.triggered_effect[i], true)) end
     field.add(properties.index, effect_group)
 
-    for i=1, 4 do field.add(properties.index, field.create("property", xml_field.property[i])) end
+    for i=1, 4 do field.add(properties.index, field.create("property", xml_field.property[i], true)) end
   end
 
   if (properties.index == nil) then
@@ -56,15 +56,15 @@ local schematics = { index = field.append("items", -1), xml = "" }
 for i=1, #items do
   local schematic = register_schematic(items[i])
   schematics.xml = schematics.xml .. schematic.xml
-  -- xml.close(schematic.index)
+  xml.close(schematic.index)
 end
 
 -- ADD GENERATED XML TO BACKEND XML OBJECT
 field.add(schematics.index, schematics.xml)
--- xml.close(schematics.index)
-
 -- ADD OBJECT XML TO FILE XML OBJECT
 field.add(0, schematics.index)
+
+xml.close(schematics.index)
 xml.close(0)
 
 -- INTERACTIVE MODE STRING (nil ONLY WHEN COMPILING OBJECT)

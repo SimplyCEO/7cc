@@ -186,8 +186,12 @@ _generate_field(lua_State* L, const int index, const char* field)
 static int
 l_api_field_create(lua_State* L)
 {
-  if (lua_gettop(L) != 2)
-  { return luaL_error(L, "\n" "usage: cc.field.create(str: \"field_name\", table: keys)"); }
+  XMLSize xml_index = 0;
+  bool close = false;
+  const char* field = NULL;
+
+  if (lua_gettop(L) < 2)
+  { return luaL_error(L, "\n" "usage: cc.field.create(str: \"field_name\", table: keys, *bool: close)"); }
 
   if (lua_isstring(L, 1) == false)
   { return luaL_error(L, "\n" "cc.field.create(): First argument is not a valid string."); }
@@ -195,8 +199,11 @@ l_api_field_create(lua_State* L)
   if (lua_istable(L, 2) == false)
   { return luaL_error(L, "\n" "cc.field.create(): Second argument is not a valid table."); }
 
-  const char* field = lua_tostring(L, 1);
-  XMLSize xml_index = _generate_field(L, 2, field);
+  if (lua_isboolean(L, 3) == true)
+  { close = lua_toboolean(L, 3); }
+
+  field = lua_tostring(L, 1);
+  xml_index = _generate_field(L, 2, field);
 
 #if (BUILD64 == 0)
   if (xml32_index == -32)
@@ -211,6 +218,13 @@ l_api_field_create(lua_State* L)
     xml32_index = 0;
   }
 #endif
+
+  if (close == true)
+  {
+    lua_pushstring(L, xml_get(xml_index)->xml);
+    xml_close(xml_index);
+    return 1;
+  }
 
   lua_pushinteger(L, xml_index);
 
