@@ -68,6 +68,10 @@ main(int argc, char* argv[])
   getcwd(cwd, 256);
   cwd = safe_realloc(cwd, (strlen(cwd)+1)*sizeof(char));
 
+  include = safe_malloc(2*sizeof(char*));
+  include[0] = strdup(PROJECT_7CC_INCLUDE);
+  include[1] = NULL;
+
   const struct option opts[] =
   {
     { .name = "compile-only", .has_arg = no_argument,       .flag = NULL, .val = 'c' },
@@ -98,22 +102,14 @@ main(int argc, char* argv[])
       case 'v': version(); return 0;
       case 'I':
       {
-        if (include != NULL)
-        {
-          for (i=0; include[i]!=NULL; ++i) {}
+        for (i=0; include[i]!=NULL; ++i) {}
 
-          int size = i + 2;
-          include = safe_realloc(include, size*sizeof(char*));
+        int size = i + 2;
+        include = safe_realloc(include, size*sizeof(char*));
 
-          for (; i<size-1; ++i)
-          { include[i] = strdup(strfmt("%s/%s", cwd, optarg)); }
-          include[i] = NULL;
-          break;
-        }
-
-        include = safe_malloc(2*sizeof(char*));
-        include[0] = strdup(strfmt("%s/%s", cwd, optarg));
-        include[1] = NULL;
+        for (; i<size-1; ++i)
+        { include[i] = strdup(strfmt("%s/%s", cwd, optarg)); }
+        include[i] = NULL;
       } break;
       default: help(); return 0;
     }

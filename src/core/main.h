@@ -8,8 +8,12 @@ extern "C"
 
 # define PROJECT_MAJOR 0
 # define PROJECT_MINOR 0
-# define PROJECT_PATCH 24
+# define PROJECT_PATCH 25
 # define PROJECT_7CC_VERSION ((PROJECT_MAJOR*100000)+(PROJECT_MINOR*1000)+(PROJECT_PATCH))
+
+# if !defined(PROJECT_7CC_INCLUDE)
+#   define PROJECT_7CC_INCLUDE "/usr/local/include/7cc"
+# endif
 
 # include "types.h"
 

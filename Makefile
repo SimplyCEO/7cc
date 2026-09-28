@@ -37,11 +37,12 @@ ifeq ($(OSNAME),mingw64)
 endif
 
 # DIRECTORIES
-SRC_DIR        := src
-OBJ_DIR        := .obj
-BIN_DIR        := bin
-INSTALL_PREFIX := /usr/local
-PWD            := $(shell pwd)
+SRC_DIR         := src
+OBJ_DIR         := .obj
+BIN_DIR         := bin
+API_INCLUDE_DIR := api/include
+PREFIX          := /usr/local
+PWD             := $(shell pwd)
 
 # FILES
 SOURCES := $(shell find $(SRC_DIR) -name '*.c' | sort)
@@ -50,7 +51,7 @@ DIRS    := $(shell echo $(OBJECTS) | tr ' ' '\n' | xargs -n1 dirname | sort -u) 
 TARGETS := 7cc
 
 # COMPILER AND LINKER
-CFLAGS    := -DBUILD64=$(BUILD64) -DLUA_32BITS -Wall -Wextra
+CFLAGS    := -DBUILD64=$(BUILD64) -DPROJECT_7CC_INCLUDE="\"$(PREFIX)/include/7cc\"" -DLUA_32BITS -Wall -Wextra
 HEADERS   := -I./src/core -I./src/lua -I./src/lua/l_field -I./src/skel -I./src/xml
 LIBRARIES := -llua -lm
 LDFLAGS   :=
@@ -100,7 +101,7 @@ RESET_COLOUR := \033[0m
 
 .PHONY: all
 
-all: directories $(TARGETS)
+all: directories prefix $(TARGETS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@printf "[CC] $(GREEN)Building object '%s'$(RESET_COLOUR)\n" "$<"
@@ -116,9 +117,13 @@ $(DIRS):
 	@printf "[DIR] $(BLUE) Directory $(BOLD_BLUE)'%s'$(RESET_COLOUR)$(BLUE) created$(RESET_COLOUR).\n" "$@"
 	@mkdir -p $(PWD)/$@
 
+prefix:
+	@mkdir -p $(PREFIX)/bin 2>/dev/null || true
+	@mkdir -p $(PREFIX)/include/7cc 2>/dev/null || true
+
 install:
-	@mkdir -p $(INSTALL_PREFIX)/bin
-	@install -m 755 $(BIN_DIR)/7cc $(INSTALL_PREFIX)/bin
+	@install -vm 755 $(BIN_DIR)/7cc $(PREFIX)/bin
+	@install -vm 644 $(API_INCLUDE_DIR)/register.lua $(PREFIX)/include/7cc
 
 clean:
 	@rm -rv $(BIN_DIR) $(OBJ_DIR) build 2>/dev/null || true
