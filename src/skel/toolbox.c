@@ -100,7 +100,7 @@ const char*
 _tb_strfmt(const char* format, ...)
 {
   strfmt_ptr = safe_free(strfmt_ptr);
-  size_t fmt_size = 3072 + strlen(format);
+  int fmt_size = 3072 + strlen(format);
   strfmt_ptr = safe_malloc(fmt_size*sizeof(char));
 
   va_list args;
@@ -108,6 +108,17 @@ _tb_strfmt(const char* format, ...)
 
   vsprintf(strfmt_ptr, format, args);
   va_end(args);
+
+  int i = strlen(strfmt_ptr);
+  for (; i>0; --i)
+  {
+    switch (strfmt_ptr[i])
+    {
+      case '\0': break;
+      case ' ': strfmt_ptr[i] = '\0'; break;
+      default: i = 0; break;
+    }
+  }
 
   strfmt_ptr = safe_realloc(strfmt_ptr, (strlen(strfmt_ptr)+1)*sizeof(char));
 
