@@ -16,14 +16,14 @@ Building
 ```sh
 git clone https://codeberg.org/SimplyCEO/7cc.git
 cd 7cc/
-make PREFIX=/usr
+make
 ```
 
 Makefile:
 |       FLAG       |                   DESCRIPTION                   |                  VALUES                  |                                                           DEFAULT                                                           |
 |------------------|-------------------------------------------------|------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
 | CC               | C compiler                                      | `gcc`/`clang`/`tcc`                      | `clang`                                                                                                                     |
-| CFLAGS           | Preprocessor flags                              | User defined                             | `-DBUILD64=$(BUILD64) -DPROJECT_7CC_INCLUDE="\"$(PREFIX)/include/7cc\"" -DLUA_32BITS -Wall -Wextra -Werror`                 |
+| CFLAGS           | Preprocessor flags                              | User defined                             | `-DBUILD64=$(BUILD64) -DLUA_32BITS -Wall -Wextra -Werror`                                                                   |
 | LDFLAGS          | Linker flags                                    | User defined                             |                                                                                                                             |
 | OSNAME           | The Operating System type name                  | `unix32`/`unix64`/`mingw32`/`mingw64`    | `unix32`                                                                                                                    |
 | BUILD64          | Compile binary for 64-bit architecture          | `0`/`1`                                  | `0`                                                                                                                         |
@@ -38,7 +38,7 @@ Installation
 The compiled binary will be located inside `bin` directory.
 
 ```sh
-su -c 'make PREFIX=/usr install'
+su -c 'make install'
 ```
 
 For portable installation:

@@ -68,9 +68,21 @@ main(int argc, char* argv[])
   getcwd(cwd, 256);
   cwd = safe_realloc(cwd, (strlen(cwd)+1)*sizeof(char));
 
+  /* SYSTEM LUA API */
+#if defined(_WIN32)
   include = safe_malloc(2*sizeof(char*));
-  include[0] = strdup(PROJECT_7CC_INCLUDE);
+# if (BUILD64 == 0)
+  include[0] = strdup("C:\\Program Files (x86)\\7cc\\include");
+# else
+  include[0] = strdup("C:\\Program Files\\7cc\\include");
+# endif
   include[1] = NULL;
+#else
+  include = safe_malloc(3*sizeof(char*));
+  include[0] = strdup("/usr/local/include/7cc");
+  include[1] = strdup("/usr/include/7cc");
+  include[2] = NULL;
+#endif
 
   const struct option opts[] =
   {

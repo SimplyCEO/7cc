@@ -1,12 +1,15 @@
 # GENERAL
-CC           := clang
-OSARCH       := i386
-OSNAME       := unix32
-OSTYPE       := linux
-BUILD_TYPE   := Release
-BUILTIN_LIBC := 1
-BUILTIN_LUA  := 1
-BUILD64      := 0
+CC             := clang
+OSARCH         := i386
+OSNAME         := unix32
+OSTYPE         := linux
+BUILD_TYPE     := Release
+BUILTIN_LIBC   := 1
+BUILTIN_LUA    := 1
+BUILD64        := 0
+PREFIX         := /usr/local
+PREFIX_BIN     := $(PREFIX)/bin
+PREFIX_INCLUDE := $(PREFIX)/include/7cc
 
 ifeq ($(OSNAME),unix32)
 	OSARCH  = i386
@@ -21,19 +24,25 @@ ifeq ($(OSNAME),unix64)
 endif
 
 ifeq ($(OSNAME),mingw32)
-	CC           = gcc
-	OSARCH       = i386
-	OSTYPE       = mingw
-	BUILTIN_LIBC = 0
-	BUILD64      = 0
+	CC             = gcc
+	OSARCH         = i386
+	OSTYPE         = mingw
+	BUILTIN_LIBC   = 0
+	BUILD64        = 0
+	PREFIX         = "\"\\Program Files (x86)\\7cc\""
+	PREFIX_BIN     = "\"\\Program Files (x86)\\7cc\""
+	PREFIX_INCLUDE = "\"\\Program Files (x86)\\7cc\\include\""
 endif
 
 ifeq ($(OSNAME),mingw64)
-	CC           = gcc
-	OSARCH       = amd64
-	OSTYPE       = mingw
-	BUILTIN_LIBC = 0
-	BUILD64      = 1
+	CC             = gcc
+	OSARCH         = amd64
+	OSTYPE         = mingw
+	BUILTIN_LIBC   = 0
+	BUILD64        = 1
+	PREFIX         = "\"\\Program Files\\7cc\""
+	PREFIX_BIN     = "\"\\Program Files\\7cc\""
+	PREFIX_INCLUDE = "\"\\Program Files\\7cc\\include\""
 endif
 
 # DIRECTORIES
@@ -51,7 +60,7 @@ DIRS    := $(shell echo $(OBJECTS) | tr ' ' '\n' | xargs -n1 dirname | sort -u) 
 TARGETS := 7cc
 
 # COMPILER AND LINKER
-CFLAGS    := -DBUILD64=$(BUILD64) -DPROJECT_7CC_INCLUDE="\"$(PREFIX)/include/7cc\"" -DLUA_32BITS -Wall -Wextra
+CFLAGS    := -DBUILD64=$(BUILD64) -DLUA_32BITS -Wall -Wextra
 HEADERS   := -I./src/core -I./src/lua -I./src/lua/l_field -I./src/skel -I./src/xml
 LIBRARIES := -llua -lm
 LDFLAGS   :=
@@ -101,7 +110,7 @@ RESET_COLOUR := \033[0m
 
 .PHONY: all
 
-all: directories prefix $(TARGETS)
+all: directories $(TARGETS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@printf "[CC] $(GREEN)Building object '%s'$(RESET_COLOUR)\n" "$<"
@@ -121,9 +130,9 @@ prefix:
 	@mkdir -p $(PREFIX)/bin 2>/dev/null || true
 	@mkdir -p $(PREFIX)/include/7cc 2>/dev/null || true
 
-install:
-	@install -vm 755 $(BIN_DIR)/7cc $(PREFIX)/bin
-	@install -vm 644 $(API_INCLUDE_DIR)/register.lua $(PREFIX)/include/7cc
+install: prefix
+	@install -vm 755 $(BIN_DIR)/7cc $(PREFIX_BIN)
+	@install -vm 644 $(API_INCLUDE_DIR)/register.lua $(PREFIX_INCLUDE)
 
 clean:
 	@rm -rv $(BIN_DIR) $(OBJ_DIR) build 2>/dev/null || true
