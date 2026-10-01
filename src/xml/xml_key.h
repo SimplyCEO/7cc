@@ -26,14 +26,6 @@ extern "C"
                               GAME_TRIGGER \
                               GAME_LOGIC_GATE
 
-typedef short XMLKeySize;
-
-typedef struct XMLKey
-{
-  char* name;
-  char* value;
-} XMLKey;
-
 XMLKeySize xml_key_size(XMLKey** xml_key);
 XMLKeySize xml_key_search(XMLKey** xml_key, const char* key);
 XMLKey**   xml_key_init(const XMLKeySize size);

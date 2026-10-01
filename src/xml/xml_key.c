@@ -8,27 +8,27 @@
 #include "toolbox.h"
 
 XMLKeySize
-xml_key_size(XMLKey** xml_key)
+xml_key_size(XMLKey** object)
 {
   XMLKeySize size = 0;
 
-  while (xml_key[size] != NULL) { ++size; }
+  while (object[size] != NULL) { ++size; }
 
   return size;
 }
 
 XMLKeySize
-xml_key_search(XMLKey** xml_key, const char* key)
+xml_key_search(XMLKey** object, const char* key)
 {
   XMLKeySize i = 0;
   XMLKeySize index = -1;
 
-  for (; xml_key[i]!=NULL; ++i)
+  for (; object[i]!=NULL; ++i)
   {
     size_t length = 0;
     for (; key[length]!='\0'; ++length) { if (key[length+1] == ';') { break; } }
 
-    if (strncmp(xml_key[i]->name, key, length) == 0)
+    if (strncmp(object[i]->name, key, length) == 0)
     { index = i; break; }
   }
 
@@ -40,93 +40,90 @@ xml_key_init(const XMLKeySize size)
 {
   XMLKeySize i = 0;
 
-  XMLKey** xml_key = (XMLKey**)malloc((size+1)*sizeof(XMLKey*));
+  XMLKey** object = (XMLKey**)malloc((size+1)*sizeof(XMLKey*));
 
   for (; i<size; ++i)
   {
-    xml_key[i] = (XMLKey*)malloc(sizeof(XMLKey));
-    xml_key[i]->name = NULL;
-    xml_key[i]->value = NULL;
+    object[i] = (XMLKey*)malloc(sizeof(XMLKey));
+    object[i]->name = NULL;
+    object[i]->value = NULL;
   }
-  xml_key[size] = NULL;
+  object[size] = NULL;
 
-  return xml_key;
+  return object;
 }
 
 XMLKey**
-xml_key_expand(XMLKey** xml_key, const XMLKeySize new_size)
+xml_key_expand(XMLKey** object, const XMLKeySize new_size)
 {
   XMLKeySize i = 0;
-  XMLKeySize size = xml_key_size(xml_key);
+  XMLKeySize size = xml_key_size(object);
 
   /* TODO: Shrink the structure. */
-  if ((size == new_size) || (size > new_size)) { return xml_key; }
+  if ((size == new_size) || (size > new_size)) { return object; }
 
-  XMLKey** new_xml_key = (XMLKey**)realloc(xml_key, (new_size+1)*sizeof(XMLKey*));
-
-  if (new_xml_key == NULL) { return xml_key; }
-  xml_key = new_xml_key;
+  object = (XMLKey**)safe_realloc(object, (new_size+1)*sizeof(*object));
 
   for (i=size; i<new_size; ++i)
   {
-    xml_key[i] = (XMLKey*)malloc(sizeof(XMLKey));
-    xml_key[i]->name = NULL;
-    xml_key[i]->value = NULL;
+    object[i] = (XMLKey*)malloc(sizeof(XMLKey));
+    object[i]->name = NULL;
+    object[i]->value = NULL;
   }
-  xml_key[new_size] = NULL;
+  object[new_size] = NULL;
 
-  return xml_key;
+  return object;
 }
 
 XMLKey*
-xml_key_set(XMLKey* xml_key, const char* name, const char* value)
+xml_key_set(XMLKey* object, const char* name, const char* value)
 {
-  xml_key->name = safe_free(xml_key->name);
-  xml_key->value = safe_free(xml_key->value);
+  object->name = safe_free(object->name);
+  object->value = safe_free(object->value);
 
-  xml_key->name = strdup(name);
-  xml_key->value = strdup(value);
+  object->name = strdup(name);
+  object->value = strdup(value);
 
-  return xml_key;
+  return object;
 }
 
 XMLKey**
-xml_key_add(XMLKey** xml_key, const char* name, const char* value)
+xml_key_add(XMLKey** object, const char* name, const char* value)
 {
-  if (xml_key == NULL)
+  if (object == NULL)
   { return NULL; }
 
-  if (xml_key[0]->value == NULL)
+  if (object[0]->value == NULL)
   {
-    xml_key[0] = xml_key_set(xml_key[0], name, value);
-    return xml_key;
+    object[0] = xml_key_set(object[0], name, value);
+    return object;
   }
 
-  XMLKeySize size = xml_key_size(xml_key);
+  XMLKeySize size = xml_key_size(object);
 
-  xml_key = xml_key_expand(xml_key, (size+1));
+  object = xml_key_expand(object, (size+1));
 
-  xml_key[size] = xml_key_set(xml_key[size], name, value);
+  object[size] = xml_key_set(object[size], name, value);
 
-  return xml_key;
+  return object;
 }
 
 XMLKey**
-xml_key_reorder(XMLKey** xml_key, const char* order)
+xml_key_reorder(XMLKey** object, const char* order)
 {
-  if ((xml_key == NULL) || ((*xml_key)->name == NULL))
-  { return xml_key; }
+  if ((object == NULL) || ((*object)->name == NULL))
+  { return object; }
 
   XMLKeySize  i = 0;
   XMLKeySize  n = 0;
   XMLKeySize  size = 0;
   XMLKeySize  n_size = 0;
   XMLKeySize* indexes = NULL;
-  XMLKey**    new_xml_key = NULL;
+  XMLKey**    new_object = NULL;
   const char* order_ptr = order;
 
-  size = xml_key_size(xml_key);
-  new_xml_key = xml_key_init(size);
+  size = xml_key_size(object);
+  new_object = xml_key_init(size);
 
   indexes = safe_malloc(size*sizeof(XMLKeySize));
   for (i=0; i<size; ++i)
@@ -139,8 +136,8 @@ xml_key_reorder(XMLKey** xml_key, const char* order)
       if (order_ptr[i] == ';') { ++i; }
       if (order_ptr[i] == '\0') { break; }
 
-      /* -1 means given key do not exist in `xml_key`. */
-      XMLKeySize index = xml_key_search(xml_key, order_ptr + i);
+      /* -1 means given key do not exist in `object`. */
+      XMLKeySize index = xml_key_search(object, order_ptr + i);
       if (index != -1)
       {
         indexes[n_size] = index;
@@ -158,7 +155,7 @@ xml_key_reorder(XMLKey** xml_key, const char* order)
 
     for (n=0; n<=size; ++n)
     {
-      for (i=0; xml_key[i]!=NULL; ++i)
+      for (i=0; object[i]!=NULL; ++i)
       {
         if (avoid[i] == 1) { continue; }
 
@@ -176,32 +173,32 @@ xml_key_reorder(XMLKey** xml_key, const char* order)
   /* reorder keys. */
   if (size == n_size)
   {
-    for (i=0; new_xml_key[i]!=NULL; ++i)
+    for (i=0; new_object[i]!=NULL; ++i)
     {
-      new_xml_key[i] = safe_free(new_xml_key[i]);
-      new_xml_key[i] = xml_key[indexes[i]];
+      new_object[i] = safe_free(new_object[i]);
+      new_object[i] = object[indexes[i]];
     }
   }
 
   indexes = safe_free(indexes);
-  xml_key = safe_free(xml_key);
+  object = safe_free(object);
 
-  return new_xml_key;
+  return new_object;
 }
 
 XMLKey**
-xml_key_free(XMLKey** xml_key)
+xml_key_free(XMLKey** object)
 {
-  if (xml_key != NULL)
+  if (object != NULL)
   {
     XMLKeySize i = 0;
-    while (xml_key[i] != NULL)
+    while (object[i] != NULL)
     {
-      xml_key[i]->name = safe_free(xml_key[i]->name);
-      xml_key[i]->value = safe_free(xml_key[i]->value);
-      xml_key[i] = safe_free(xml_key[i]);
+      object[i]->name = safe_free(object[i]->name);
+      object[i]->value = safe_free(object[i]->value);
+      object[i] = safe_free(object[i]);
     }
-    xml_key = safe_free(xml_key);
+    object = safe_free(object);
   }
 
   return NULL;

@@ -8,7 +8,8 @@ extern "C"
 
 # include "xml_key.h"
 
-XMLObject* xml_field_add(XMLObject* xml, const char* name, XMLKey** key);
+XMLObject* xml_field_init(XMLObject* object, const char* field, XMLKey** values);
+XMLObject* xml_field_add(XMLObject* object, XMLObject* field);
 
 # if defined(__cplusplus)
 }

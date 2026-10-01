@@ -8,9 +8,8 @@ extern "C"
 
 # include "xml.h"
 
-XMLObject* xml_parse_fix_structure(XMLObject* xml);
-XMLObject* xml_parse_identation(XMLObject* xml);
-XMLObject* xml_parse_translate(XMLObject* xml, const char* n, const char* t);
+XMLObject* xml_parse_translate(XMLObject* object, const char* n, const char* t);
+XMLObject* xml_parse_assemble(XMLObject* object);
 
 # if defined(__cplusplus)
 }

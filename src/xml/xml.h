@@ -6,19 +6,8 @@ extern "C"
 {
 # endif
 
-# include "types.h"
+# include "xml_typedef.h"
 
-typedef short XMLSize;
-
-typedef struct XMLObject
-{
-  char*   path;
-  char*   xml;
-  XMLSize cursor;
-  bool    garbage;
-} XMLObject;
-
-XMLObject* xml_object_free(XMLObject* xml_object);
 XMLSize    xml_open(const char* path);
 XMLObject* xml_get(const XMLSize index);
 XMLObject* xml_set(const XMLSize index, const char* src);
