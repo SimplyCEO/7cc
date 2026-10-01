@@ -1,9 +1,6 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "xml.h"
-#include "xml_key.h"
 #include "xml_object.h"
 
 #include "safe_alloc.h"
@@ -12,7 +9,7 @@
 XMLObject** xml = NULL;
 
 XMLSize
-xml_open(const char* path)
+xml_open(void)
 {
   if (xml != NULL)
   {
@@ -28,14 +25,14 @@ xml_open(const char* path)
     xml = (XMLObject**)safe_realloc(xml, size*sizeof(*xml));
 
     for (; i<size-1; ++i)
-    { xml[i] = xml_object_alloc(path); }
+    { xml[i] = xml_object_alloc(); }
     xml[i] = NULL;
 
     return i-1;
   }
 
   xml = (XMLObject**)malloc(2*sizeof(XMLObject*));
-  xml[0] = xml_object_alloc(path);
+  xml[0] = xml_object_alloc();
   xml[1] = NULL;
 
   return 0;
@@ -47,14 +44,18 @@ xml_get(const XMLSize index)
   return xml[index];
 }
 
-XMLObject*
-xml_set(const XMLSize index, const char* src)
+XMLSize
+xml_set(XMLObject* object, XMLSize index)
 {
-  xml[index]->data->content = safe_free(xml[index]->data->content);
-  xml[index]->data->content = strdup(src);
-  xml[index]->info->size = strlen(src);
+  XMLSize size = xml_object_size(xml);
 
-  return xml[index];
+  if ((index > size) || (index == 0))
+  { index = xml_open(); }
+
+  xml[index] = xml_object_free(xml[index]);
+  xml[index] = object;
+
+  return index;
 }
 
 XMLObject*

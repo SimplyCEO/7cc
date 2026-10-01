@@ -1,14 +1,10 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "xml_object.h"
 #include "xml_key.h"
 
 #include "safe_alloc.h"
-#include "toolbox.h"
 
-/*
 static XMLObject*
 xml_object_version(XMLObject* object)
 {
@@ -17,7 +13,6 @@ xml_object_version(XMLObject* object)
 
   return object;
 }
-*/
 
 XMLSize
 xml_object_size(XMLObject** object)
@@ -30,7 +25,7 @@ xml_object_size(XMLObject** object)
 }
 
 XMLObject*
-xml_object_alloc(const char* path)
+xml_object_alloc(void)
 {
   XMLObject* object = (XMLObject*)malloc(sizeof(XMLObject));
 
@@ -46,21 +41,6 @@ xml_object_alloc(const char* path)
   object->field = NULL;
 
   object->garbage = false;
-
-  if (path != NULL)
-  {
-    char*       buffer   = strdup(path);
-    const char* dir_path = dirname(path);
-
-    /* Directory is either empty or a file name. */
-    if ((dir_path[0] == '\0') || (strcmp(dir_path, path) == 0))
-    {
-      strcpy(buffer, basename(path));
-    }
-
-    object->info->path = strdup(buffer);
-    buffer = safe_free(buffer);
-  }
 
   return object;
 }

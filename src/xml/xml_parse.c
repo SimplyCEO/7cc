@@ -4,7 +4,6 @@
 
 #include "safe_alloc.h"
 #include "toolbox.h"
-#include "types.h"
 
 #define TAB '+'
 #define NL '`'
@@ -12,7 +11,7 @@
 int tab_size = 0;
 
 XMLObject*
-xml_parse_translate(XMLObject* object, const char* n, const char* t)
+xml_parse_translate(XMLObject* object, const char* t, const char* n)
 {
   if (object == NULL)
   { return NULL; }
@@ -33,8 +32,8 @@ xml_parse_translate(XMLObject* object, const char* n, const char* t)
       size_t r = 0;
       switch (c)
       {
-        case TAB: for (; r<strlen(n); ++r) { buffer[b] = n[r]; ++b; } continue;
-        case NL: for (; r<strlen(t); ++r) { buffer[b] = t[r]; ++b; } continue;
+        case TAB: for (; r<strlen(t); ++r) { buffer[b] = t[r]; ++b; } continue;
+        case NL:  for (; r<strlen(n); ++r) { buffer[b] = n[r]; ++b; } continue;
       }
     }
 
@@ -51,6 +50,7 @@ xml_parse_translate(XMLObject* object, const char* n, const char* t)
   buffer = safe_realloc(buffer, (strlen(buffer)+1)*sizeof(char));
   object->data->content = safe_free(object->data->content);
   object->data->content = buffer;
+  object->info->size = strlen(object->data->content);
 
   return object;
 }
@@ -74,7 +74,6 @@ xml_parse_assemble(XMLObject* object)
   { buffer = strdup(strfmt("%s<%s/>%c", identation, object->data->content, NL)); }
   else
   {
-/*
     XMLSize size = 0;
     char* xml_content = safe_malloc(sizeof(char));
 
@@ -85,12 +84,9 @@ xml_parse_assemble(XMLObject* object)
       xml_content = strins(xml_content, strlen(xml_content), xml_parse_assemble(object->field[size])->data->content);
     }
 
-    buffer = strdup(strfmt("%s<%s>%c%s</%s>%c", identation, object->data->content, NL, xml_content, object->info->field, NL));
+    buffer = strdup(strfmt("%s<%s>%c%s%s</%s>%c", identation, object->data->content, NL, xml_content, identation, object->info->field, NL));
 
     xml_content = safe_free(xml_content);
-*/
-
-    buffer = strdup(strfmt("%s<%s>%c</%s>%c", identation, object->data->content, NL, object->info->field, NL));
   }
 
   object->data->content = safe_free(object->data->content);

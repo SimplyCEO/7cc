@@ -8,9 +8,9 @@ extern "C"
 
 # include "xml_typedef.h"
 
-XMLSize    xml_open(const char* path);
+XMLSize    xml_open(void);
 XMLObject* xml_get(const XMLSize index);
-XMLObject* xml_set(const XMLSize index, const char* src);
+XMLSize    xml_set(XMLObject* object, XMLSize index);
 XMLObject* xml_write(const XMLSize index, const char* src);
 void       xml_close(const XMLSize index);
 

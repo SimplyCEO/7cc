@@ -2,7 +2,6 @@
 #include <string.h>
 
 #include "xml_field.h"
-#include "xml_object.h"
 
 #include "safe_alloc.h"
 #include "toolbox.h"
@@ -46,7 +45,7 @@ xml_field_add(XMLObject* object, XMLObject* field)
   int i = 0;
   bool skip = false;
 
-  if ((object->field == NULL) || (xml_object_size(object->field) == 1))
+  if (object->field == NULL)
   {
     object->field = (XMLObject**)malloc(2*sizeof(*object->field));
     object->field[0] = field;
