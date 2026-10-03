@@ -3,6 +3,7 @@
 #include "xml.h"
 #include "xml_field.h"
 #include "xml_key.h"
+#include "xml_object.h"
 
 #include "safe_alloc.h"
 #include "toolbox.h"
@@ -30,28 +31,25 @@ l_api_field_remove(lua_State* L)
   }
 
   const char* section = lua_tostring(L, 1);
-  const char* xml_buffer = NULL;
+  XMLObject* buffer = NULL;
 
   if (isinteger == true)
-  {
-    const XMLSize index = lua_tointeger(L, 2);
-    xml_buffer = (index != -1) ? xml_get(index)->xml : "";
-  }
+  { buffer = xml_get(lua_tointeger(L, 2)); }
   else
-  { xml_buffer = lua_tostring(L, 2); }
+  {
+    buffer = xml_object_alloc();
+    buffer->data->content = strdup(lua_tostring(L, 2));
+  }
 
-  XMLSize remove_index = xml_open(NULL);
-  XMLObject* remove = xml_get(remove_index);
-  XMLKey** remove_key = xml_key_init(1);
+  XMLSize object_index = xml_open();
+  XMLObject* object = xml_get(object_index);
+  object->data->keys = xml_key_init(1);
 
-  remove_key = xml_key_add(remove_key, "xpath", strfmt("/%s", section));
-  remove = xml_field_add(remove, "remove", remove_key);
+  object->data->keys = xml_key_add(object->data->keys, "xpath", strfmt("/%s", section));
+  object = xml_field_init(object, "remove", object->data->keys);
+  object = xml_field_add(object, buffer);
 
-  xml_write(remove_index, xml_buffer);
-
-  remove_key = xml_key_free(remove_key);
-
-  lua_pushinteger(L, remove_index);
+  lua_pushinteger(L, object_index);
 
   return 1;
 }

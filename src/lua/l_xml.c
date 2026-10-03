@@ -13,9 +13,8 @@
 static int
 l_api_xml_open(lua_State* L)
 {
-  XMLSize xml_buffer_index = xml_open(NULL);
+  XMLSize xml_buffer_index = xml_open();
 
-  xml_write(xml_buffer_index, "");
   lua_pushinteger(L, xml_buffer_index);
 
   return 1;
@@ -30,7 +29,9 @@ l_api_xml_get(lua_State* L)
   if (lua_isinteger(L, 1) == false)
   { return luaL_error(L, "\n" "cc.xml.get(): XML index not given."); }
 
-  lua_pushstring(L, xml_get(lua_tointeger(L, 1))->xml);
+  XMLObject* object = xml_get(lua_tointeger(L, 1));
+
+  lua_pushstring(L, object->data->content);
 
   return 1;
 }
@@ -47,7 +48,7 @@ l_api_xml_set(lua_State* L)
   if (lua_isstring(L, 2) == false)
   { return luaL_error(L, "\n" "cc.xml.set(): Raw XML not given."); }
 
-  xml_set(lua_tointeger(L, 1), lua_tostring(L, 2));
+  xml_write(lua_tointeger(L, 1), lua_tostring(L, 2));
 
   return 1;
 }
@@ -65,32 +66,31 @@ l_api_xml_close(lua_State* L)
 
   if ((index == l_xml_index) && (l_xml != NULL))
   {
-    l_xml = xml_parse_fix_structure(l_xml);
-    l_xml = xml_parse_identation(l_xml);
+    l_xml = xml_parse_assemble(l_xml);
 
     switch (identation)
     {
-      case -1: l_xml = xml_parse_translate(l_xml, "", ""); break;
-      case 1: l_xml = xml_parse_translate(l_xml, "\n", "  "); break;
-      default: l_xml = xml_parse_translate(l_xml, "\n", "\t"); break;
+      case -1: l_xml = xml_parse_translate(l_xml, "",   ""  ); break;
+      case 1:  l_xml = xml_parse_translate(l_xml, "  ", "\n"); break;
+      default: l_xml = xml_parse_translate(l_xml, "\t", "\n"); break;
     }
 
     /* View XML file instead of compiling object. */
     if (compile == false)
     {
-      lua_pushstring(L, l_xml->xml);
+      lua_pushstring(L, l_xml->data->content);
       lua_setglobal(L, "cc_output");
-      xml_close(-1);
+      /*xml_close(-1);*/
       return 1;
     }
 
-    FILE* stream = fopen(l_xml->path, "w");
+    FILE* stream = fopen(l_xml->info->path, "w");
     size_t i = 0;
-    for (; i<strlen(l_xml->xml); ++i)
-    { fputc(l_xml->xml[i], stream); }
+    for (; i<strlen(l_xml->data->content); ++i)
+    { fputc(l_xml->data->content[i], stream); }
     fclose(stream);
 
-    xml_close(-1);
+    /*xml_close(-1);*/
 
     return 1;
   }

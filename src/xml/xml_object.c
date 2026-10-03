@@ -1,15 +1,17 @@
 #include <stdlib.h>
+#include <string.h>
 
 #include "xml_object.h"
 #include "xml_key.h"
 
 #include "safe_alloc.h"
+#include "toolbox.h"
 
 static XMLObject*
 xml_object_version(XMLObject* object)
 {
   object->data->content = strdup("?xml version=\"1.0\" encoding=\"UTF-8\"?");
-  object->info->end = strlen(object->data->content);
+  object->info->size = strlen(object->data->content);
 
   return object;
 }

@@ -106,6 +106,41 @@ l_getvalue(lua_State* L, const int index)
   return value;
 }
 
+static void
+l_api_output_xml(void)
+{
+  l_xml_index = xml_open();
+  l_xml = xml_get(l_xml_index);
+
+  if (output == NULL) { output = "example"; }
+
+  /* XML file name field. */
+  char*       buffer   = strdup(output);
+  const char* dir_path = dirname(output);
+
+  /* Directory is either empty or a file name. */
+  if ((dir_path[0] == '\0') || (strcmp(dir_path, output) == 0))
+  {
+    strcpy(buffer, basename(output));
+  }
+
+  l_xml->info->path = strdup(buffer);
+  buffer = safe_free(buffer);
+
+  buffer = strdup(basename(output));
+
+  const char* filetype = strchr(buffer, '.');
+  if (filetype != NULL)
+  {
+    buffer = strcut(buffer, 0, strlen(buffer) - strlen(filetype));
+  }
+
+  l_xml = xml_field_init(l_xml, buffer, l_xml->data->keys);
+
+  output = NULL;
+  buffer = safe_free(buffer);
+}
+
 lua_State*
 l_init(void)
 {
@@ -116,23 +151,7 @@ l_init(void)
   lua_setglobal(L, "doinclude");
 
   l_api_functions(L);
-
-  l_xml_index = xml_open(output);
-  l_xml = xml_get(l_xml_index);
-
-  /* XML file name field. */
-  if (output != NULL)
-  {
-    XMLSize    field_index = xml_open(NULL);
-    XMLObject* field = xml_get(field_index);
-    char* buffer = strdup(basename(output));
-    buffer = strcut(buffer, 0, strlen(buffer) - 5);
-    field = xml_field_add(field, buffer, NULL);
-    l_xml = xml_write(l_xml_index, field->xml);
-    l_xml->cursor += field->cursor;
-    buffer = safe_free(buffer);
-    field = xml_object_free(field);
-  }
+  l_api_output_xml();
 
   return L;
 }
