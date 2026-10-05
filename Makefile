@@ -61,7 +61,7 @@ TARGETS := 7cc
 
 # COMPILER AND LINKER
 CFLAGS    := -DBUILD64=$(BUILD64) -DLUA_32BITS -Wall -Wextra
-HEADERS   := -I./src/core -I./src/lua -I./src/lua/l_field -I./src/skel -I./src/xml
+HEADERS   := $(shell echo $(SOURCES) | tr ' ' '\n' | xargs -n1 dirname | sort -u | sed 's|^|-I./|')
 LIBRARIES := -llua -lm
 LDFLAGS   :=
 
