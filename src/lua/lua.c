@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 
 #include "lua.h"
@@ -6,11 +7,14 @@
 
 #include "xml.h"
 #include "xml_field.h"
+#include "xml_parse.h"
 
 #include "main.h"
 #include "safe_alloc.h"
 #include "toolbox.h"
+#include "types.h"
 
+bool       api_exit = false;
 XMLSize    l_xml_index = 0;
 XMLObject* l_xml = NULL;
 
@@ -60,6 +64,42 @@ l_api_get_architecture(lua_State* L)
   return 1;
 }
 
+int
+l_api_exit(lua_State* L)
+{
+  api_exit = true;
+
+  l_xml = xml_parse_assemble(l_xml);
+
+  switch (identation)
+  {
+    case -1: l_xml = xml_parse_translate(l_xml, "",   ""  ); break;
+    case 1:  l_xml = xml_parse_translate(l_xml, "  ", "\n"); break;
+    default: l_xml = xml_parse_translate(l_xml, "\t", "\n"); break;
+  }
+
+  /* View XML file instead of compiling object. */
+  if (compile == false)
+  {
+    printf("%s\n", l_xml->data->content);
+    /*xml_close(-1);*/
+
+    luaL_error(L, "API exit signal.");
+    return 0;
+  }
+
+  FILE* stream = fopen(l_xml->info->path, "w");
+  size_t i = 0;
+  for (; i<strlen(l_xml->data->content); ++i)
+  { fputc(l_xml->data->content[i], stream); }
+  fclose(stream);
+
+  /*xml_close(-1);*/
+
+  luaL_error(L, "API exit signal.");
+  return 0;
+}
+
 void
 l_pushcfunction(lua_State* L, int (*signal)(lua_State*), const char* name)
 {
@@ -85,6 +125,7 @@ l_api_functions(lua_State* L)
   const int index = lua_gettop(L);
 
   l_pushcfunction(L, l_api_get_architecture, "get_architecture");
+  l_pushcfunction(L, l_api_exit, "exit");
   l_pushtable(L, index, l_api_field(L));
   l_pushtable(L, index, l_api_xml(L));
 
@@ -159,10 +200,15 @@ l_init(void)
 int
 l_run(lua_State* L, const char* filepath)
 {
-  if (luaL_dofile(L, filepath) != LUA_OK)
+  switch (luaL_dofile(L, filepath))
   {
-    error(lua_tostring(L, -1));
-    return 1;
+    case LUA_OK: break;
+    default:
+    {
+      if (api_exit == true) { break; }
+
+      error(lua_tostring(L, -1));
+    } return 1;
   }
 
   return 0;

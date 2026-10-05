@@ -4,7 +4,6 @@
 #include "l_xml.h"
 
 #include "xml.h"
-#include "xml_parse.h"
 
 #include "main.h"
 #include "safe_alloc.h"
@@ -64,36 +63,8 @@ l_api_xml_close(lua_State* L)
 
   const int index = lua_tointeger(L, 1);
 
-  if ((index == l_xml_index) && (l_xml != NULL))
-  {
-    l_xml = xml_parse_assemble(l_xml);
-
-    switch (identation)
-    {
-      case -1: l_xml = xml_parse_translate(l_xml, "",   ""  ); break;
-      case 1:  l_xml = xml_parse_translate(l_xml, "  ", "\n"); break;
-      default: l_xml = xml_parse_translate(l_xml, "\t", "\n"); break;
-    }
-
-    /* View XML file instead of compiling object. */
-    if (compile == false)
-    {
-      lua_pushstring(L, l_xml->data->content);
-      lua_setglobal(L, "cc_output");
-      /*xml_close(-1);*/
-      return 1;
-    }
-
-    FILE* stream = fopen(l_xml->info->path, "w");
-    size_t i = 0;
-    for (; i<strlen(l_xml->data->content); ++i)
-    { fputc(l_xml->data->content[i], stream); }
-    fclose(stream);
-
-    /*xml_close(-1);*/
-
-    return 1;
-  }
+  if (index == l_xml_index)
+  { return l_api_exit(L); }
 
   xml_close(index);
 

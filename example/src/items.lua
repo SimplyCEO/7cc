@@ -16,9 +16,6 @@ end
 -- ADD OBJECT FIELD TO FILE FIELD OBJECT
 field.add(0, schematics.index)
 
--- CLOSE ALL FIELDS
-xml.close(0)
-
--- INTERACTIVE MODE STRING (nil ONLY WHEN COMPILING OBJECT)
-if (cc_output ~= nil) then print(cc_output) end
+-- CLOSE ALL FIELDS AND PRINT XML FILE (EMPTY ONLY WHEN COMPILING OBJECT)
+cc.exit()
 
