@@ -18,14 +18,21 @@ xml_open(void)
     for (; xml[i]!=NULL; ++i)
     {
       if (xml[i]->garbage == true)
-      { return i; }
+      {
+        xml[i]->garbage = false;
+
+        return i;
+      }
     }
 
     XMLSize size = i + 2;
     xml = (XMLObject**)safe_realloc(xml, size*sizeof(*xml));
 
     for (; i<size-1; ++i)
-    { xml[i] = xml_object_alloc(); }
+    {
+      xml[i] = xml_object_alloc();
+      xml[i]->index = true;
+    }
     xml[i] = NULL;
 
     return i-1;
@@ -33,9 +40,22 @@ xml_open(void)
 
   xml = (XMLObject**)malloc(2*sizeof(XMLObject*));
   xml[0] = xml_object_alloc();
+  xml[0]->index = true;
   xml[1] = NULL;
 
   return 0;
+}
+
+XMLSize
+xml_add(XMLObject* object)
+{
+  XMLSize index = xml_open();
+
+  xml[index] = xml_object_free(xml[index]);
+  xml[index] = object;
+  xml[index]->index = true;
+
+  return index;
 }
 
 XMLObject*
@@ -54,6 +74,7 @@ xml_set(XMLObject* object, XMLSize index)
 
   xml[index] = xml_object_free(xml[index]);
   xml[index] = object;
+  xml[index]->index = true;
 
   return index;
 }
@@ -69,13 +90,15 @@ xml_write(const XMLSize index, const char* src)
 void
 xml_close(const XMLSize index)
 {
-  if (index == -1)
+  switch (index)
   {
-    XMLSize i = 0;
-    for (; xml[i]!=NULL; ++i)
-    { xml[i] = xml_object_free(xml[i]); }
-    xml = safe_free(xml);
-    return;
+    case 0:
+    {
+      XMLSize i    = 0;
+      for (; xml[i]!=NULL; ++i) { xml[i] = xml_object_free(xml[i]); }
+      xml = safe_free(xml);
+    } return;
+    default: break;
   }
 
   xml[index] = xml_object_garbage(xml[index]);

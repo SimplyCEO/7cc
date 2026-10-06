@@ -82,7 +82,7 @@ l_api_exit(lua_State* L)
   if (compile == false)
   {
     printf("%s\n", l_xml->data->content);
-    /*xml_close(-1);*/
+    xml_close(0);
 
     luaL_error(L, "API exit signal.");
     return 0;
@@ -94,7 +94,7 @@ l_api_exit(lua_State* L)
   { fputc(l_xml->data->content[i], stream); }
   fclose(stream);
 
-  /*xml_close(-1);*/
+  xml_close(0);
 
   luaL_error(L, "API exit signal.");
   return 0;
@@ -105,6 +105,14 @@ l_pushcfunction(lua_State* L, int (*signal)(lua_State*), const char* name)
 {
   lua_pushstring(L, name);
   lua_pushcfunction(L, signal);
+  lua_settable(L, -3);
+}
+
+void
+l_pushstring(lua_State* L, const char* value, const char* name)
+{
+  lua_pushstring(L, name);
+  lua_pushstring(L, value);
   lua_settable(L, -3);
 }
 
@@ -200,15 +208,10 @@ l_init(void)
 int
 l_run(lua_State* L, const char* filepath)
 {
-  switch (luaL_dofile(L, filepath))
+  if ((luaL_dofile(L, filepath) != LUA_OK) && (api_exit == false))
   {
-    case LUA_OK: break;
-    default:
-    {
-      if (api_exit == true) { break; }
-
-      error(lua_tostring(L, -1));
-    } return 1;
+    error(lua_tostring(L, -1));
+    return 1;
   }
 
   return 0;

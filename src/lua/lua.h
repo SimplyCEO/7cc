@@ -12,6 +12,7 @@ extern "C"
 
 int         l_api_exit(lua_State* L);
 void        l_pushcfunction(lua_State* L, int (*signal)(lua_State*), const char* name);
+void        l_pushstring(lua_State* L, const char* value, const char* name);
 void        l_pushtable(lua_State* L, const int index, const char* reference);
 const char* l_getvalue(lua_State* L, const int index);
 lua_State*  l_init(void);
