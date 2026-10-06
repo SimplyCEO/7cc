@@ -14,9 +14,27 @@
 #include "toolbox.h"
 #include "types.h"
 
-bool       api_exit = false;
+bool       api_exit    = false;
 XMLSize    l_xml_index = 0;
-XMLObject* l_xml = NULL;
+XMLObject* head_info   = NULL;
+XMLObject* l_xml       = NULL;
+
+static XMLObject*
+l_api_xml_assemble(XMLObject* object)
+{
+  object = xml_parse_assemble(object);
+
+  switch (identation)
+  {
+    case -1: object = xml_parse_translate(object, "",   ""  ); break;
+    case 1:  object = xml_parse_translate(object, "  ", "\n"); break;
+    default: object = xml_parse_translate(object, "\t", "\n"); break;
+  }
+
+  object->print = true;
+
+  return object;
+}
 
 static int
 l_api_doinclude(lua_State* L)
@@ -69,19 +87,11 @@ l_api_exit(lua_State* L)
 {
   api_exit = true;
 
-  l_xml = xml_parse_assemble(l_xml);
-
-  switch (identation)
-  {
-    case -1: l_xml = xml_parse_translate(l_xml, "",   ""  ); break;
-    case 1:  l_xml = xml_parse_translate(l_xml, "  ", "\n"); break;
-    default: l_xml = xml_parse_translate(l_xml, "\t", "\n"); break;
-  }
+  l_xml = l_api_xml_assemble(l_xml);
 
   /* View XML file instead of compiling object. */
   if (compile == false)
   {
-    printf("%s\n", l_xml->data->content);
     xml_close(0);
 
     luaL_error(L, "API exit signal.");
@@ -93,6 +103,9 @@ l_api_exit(lua_State* L)
   for (; i<strlen(l_xml->data->content); ++i)
   { fputc(l_xml->data->content[i], stream); }
   fclose(stream);
+
+  head_info->print = false;
+  l_xml->print = false;
 
   xml_close(0);
 
@@ -158,6 +171,11 @@ l_getvalue(lua_State* L, const int index)
 static void
 l_api_output_xml(void)
 {
+  head_info = xml_object_alloc();
+  head_info = xml_object_version(head_info);
+  head_info = l_api_xml_assemble(head_info);
+  xml_add(head_info);
+
   l_xml_index = xml_open();
   l_xml = xml_get(l_xml_index);
 

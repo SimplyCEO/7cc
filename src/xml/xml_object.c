@@ -7,7 +7,7 @@
 #include "safe_alloc.h"
 #include "toolbox.h"
 
-static XMLObject*
+XMLObject*
 xml_object_version(XMLObject* object)
 {
   object->data->content = strdup("?xml version=\"1.0\" encoding=\"UTF-8\"?");
@@ -44,6 +44,7 @@ xml_object_alloc(void)
 
   object->garbage = false;
   object->index = false;
+  object->print = false;
 
   return object;
 }

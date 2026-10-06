@@ -37,6 +37,7 @@ typedef struct XMLObject
   struct XMLObject** field;
   bool               garbage;
   bool               index;
+  bool               print;
 } XMLObject;
 
 # if defined(__cplusplus)

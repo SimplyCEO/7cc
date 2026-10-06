@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "xml.h"
@@ -95,7 +96,11 @@ xml_close(const XMLSize index)
     case 0:
     {
       XMLSize i    = 0;
-      for (; xml[i]!=NULL; ++i) { xml[i] = xml_object_free(xml[i]); }
+      for (; xml[i]!=NULL; ++i)
+      {
+        if (xml[i]->print == true) { printf("%s\n", xml[i]->data->content); }
+        xml[i] = xml_object_free(xml[i]);
+      }
       xml = safe_free(xml);
     } return;
     default: break;

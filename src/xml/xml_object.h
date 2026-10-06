@@ -8,6 +8,7 @@ extern "C"
 
 # include "xml_typedef.h"
 
+XMLObject* xml_object_version(XMLObject* object);
 XMLSize    xml_object_size(XMLObject** object);
 XMLObject* xml_object_alloc(void);
 XMLObject* xml_object_free(XMLObject* object);
