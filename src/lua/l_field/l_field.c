@@ -82,6 +82,9 @@ l_api_field_add(lua_State* L)
     isinteger = false;
   }
 
+  if (lua_tointeger(L, 2) < 0)
+  { return 1; }
+
   index = lua_tointeger(L, 1);
   object = xml_get(index);
 

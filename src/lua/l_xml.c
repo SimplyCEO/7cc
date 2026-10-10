@@ -28,6 +28,9 @@ l_api_xml_get(lua_State* L)
   if (lua_isinteger(L, 1) == false)
   { return luaL_error(L, "\n" "cc.xml.get(): XML index not given."); }
 
+  if (lua_tointeger(L, 1) < 0)
+  { return 1; }
+
   XMLObject* object = xml_get(lua_tointeger(L, 1));
 
   lua_pushstring(L, object->data->content);
@@ -47,6 +50,9 @@ l_api_xml_set(lua_State* L)
   if (lua_isstring(L, 2) == false)
   { return luaL_error(L, "\n" "cc.xml.set(): Raw XML not given."); }
 
+  if (lua_tointeger(L, 1) < 0)
+  { return 1; }
+
   xml_write(lua_tointeger(L, 1), lua_tostring(L, 2));
 
   return 1;
@@ -60,6 +66,9 @@ l_api_xml_close(lua_State* L)
 
   if (lua_isinteger(L, 1) == false)
   { return luaL_error(L, "\n" "cc.xml.close(): XML index not given."); }
+
+  if (lua_tointeger(L, 1) < 0)
+  { return 1; }
 
   const int index = lua_tointeger(L, 1);
 

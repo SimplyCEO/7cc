@@ -34,6 +34,9 @@ l_api_field_remove(lua_State* L)
     isinteger = false;
   }
 
+  if (lua_tointeger(L, 2) < 0)
+  { return 1; }
+
   section = lua_tostring(L, 1);
 
   if (isinteger == true)
